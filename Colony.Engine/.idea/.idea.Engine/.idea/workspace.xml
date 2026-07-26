@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackgroundAgentGlobalSettings">
+    <option name="selectedModelId" value="auto" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ab01a28e-2286-45a8-a041-d62fc8c516fb" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/InputSystem_Actions.inputactions" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/InputSystem_Actions.inputactions.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Readme.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Readme.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Scenes/SampleScene.unity" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Scenes/SampleScene.unity.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Scripts.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Scripts/Bootstrap.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/DefaultVolumeProfile.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/DefaultVolumeProfile.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/Mobile_RPAsset.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/Mobile_RPAsset.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/Mobile_Renderer.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/Mobile_Renderer.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/PC_RPAsset.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/PC_RPAsset.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/PC_Renderer.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/PC_Renderer.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/SampleSceneProfile.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/SampleSceneProfile.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Icons.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Icons/URP.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Icons/URP.png.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Layout.wlt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Layout.wlt.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts/Editor.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts/Readme.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Colony.Unity/Assets/TutorialInfo/Scripts/Readme.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Colony.Engine/Colony.Engine.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Colony.Engine/Engine.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Colony.Engine/Terrain/Terrain.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Colony.Engine/Terrain/TerrainLayer.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Colony.Engine/build.ps1" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/Alexis/Documents/MyWorks/MyWorldSimulation/Engine" value="3GafVDj1rr842xWOdmqzOKMwbjr" />
+    </persistenceIdMap>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Engine/Engine.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Engine/Terrain/Terrain.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="3GafVDj1rr842xWOdmqzOKMwbjr" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectSessionTemplates">
+    <option name="panelTemplate">
+      <template>
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="BACKGROUND" />
+        <option name="worktreeMode" value="WORKSPACE" />
+      </template>
+    </option>
+  </component>
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ab01a28e-2286-45a8-a041-d62fc8c516fb" name="Changes" comment="" />
+      <created>1784214622792</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1784214622792</updated>
+      <workItem from="1784214624497" duration="4508000" />
+      <workItem from="1784453663765" duration="427000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
