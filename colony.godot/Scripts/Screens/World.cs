@@ -1,4 +1,3 @@
-
 using Colony.Engine.Simulation;
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Colony.Godot.Scripts.Rendering;
@@ -17,10 +16,12 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
     {
         _simulationEngine = simulationEngine;
     }
+
     public void Inject(WorldRenderer worldRenderer)
     {
         _worldRenderer = worldRenderer;
     }
+
     public void Inject(CameraController cameraController)
     {
         _cameraController = cameraController;
@@ -29,14 +30,14 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
     public override void _Ready()
     {
         var world = _worldRenderer.Build(_simulationEngine.World);
-        
+
         AddChild(world);
 
         // worldRenderer.ShowOnlyLayer(0);
         _worldRenderer.SetLayerVisible(0, true);
         _worldRenderer.SetLayerVisible(1, false);
         _worldRenderer.SetLayerVisible(2, true);
-        
+
         SetupCamera();
         CreateLight();
     }
@@ -44,21 +45,48 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
     public override void _Process(double delta)
     {
         _cameraController.UpdateMovement(delta);
+        _cameraController.UpdateZoom(delta);
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is not InputEventKey keyEvent)
+            return;
+
+        if (!keyEvent.Pressed || keyEvent.Echo)
+            return;
+
+        if (keyEvent.Keycode == Key.A)
+        {
+            _cameraController.RotateCounterClockwise();
+        }
+        else if (keyEvent.Keycode == Key.E)
+        {
+            _cameraController.RotateClockwise();
+        }
     }
 
     private void SetupCamera()
     {
+        var initialCenter = new Vector3(_simulationEngine.World.Width / 2, 0, _simulationEngine.World.Height / 2);
+
+        var cameraPivot = new Camera3D
+        {
+            Name = "CameraPivot",
+        };
+
+        AddChild(cameraPivot);
+
         var camera = new Camera3D
         {
-            Position = new Vector3(10, 10, 10),
+            Name = "Camera3D"
         };
-        
-        AddChild(camera);
-        
-        camera.LookAt(new Vector3(0, 0, 0));
+
+        cameraPivot.AddChild(camera);
+
         camera.Current = true;
-        
-        _cameraController.Initialize(camera);
+
+        _cameraController.Initialize(cameraPivot, camera, initialCenter);
     }
 
     private void CreateLight()
