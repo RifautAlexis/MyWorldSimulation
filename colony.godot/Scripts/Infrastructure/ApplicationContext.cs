@@ -1,21 +1,21 @@
+using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Colony.Godot.Scripts.Screens;
 using Godot;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Colony.Godot.Scripts.Infrastructure;
 
-public class ApplicationContext
+public class ApplicationContext : IInject<ScreenNavigator>, IInject<SceneManager>
 {
-    private readonly ServiceProvider _services;
-    private readonly ScreenNavigator _screenNavigator;
-    private readonly SceneManager _sceneManager;
+    private ScreenNavigator _screenNavigator = null!;
+    private SceneManager _sceneManager = null!;
 
-    public ApplicationContext()
+    public void Inject(ScreenNavigator dependency)
     {
-        _services = ServiceConfiguration.Build();
-        
-        _sceneManager = _services.GetRequiredService<SceneManager>();
-        _screenNavigator = _services.GetRequiredService<ScreenNavigator>();
+        _screenNavigator = dependency;
+    }
+    public void Inject(SceneManager dependency)
+    {
+        _sceneManager = dependency;
     }
     
     public void Initialize(Node root)

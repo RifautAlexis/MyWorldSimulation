@@ -1,5 +1,7 @@
 using System;
+using Colony.Engine.Simulation;
 using Colony.Godot.Scripts.Events;
+using Colony.Godot.Scripts.Rendering;
 using Colony.Godot.Scripts.Screens;
 using Colony.Godot.Scripts.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,11 +27,18 @@ public static class ServiceConfiguration
         services.AddSingleton<ScreenFactory>();
         services.AddSingleton<ScreenNavigator>();
         
+        // Engine - external library
+        services.AddSingleton<SimulationEngine>();
+        
         // Screens
         services.AddTransient<MainMenu>();
         services.AddTransient<World>();
-
+        
+        // Renderers
+        services.AddSingleton<LayerRenderer>();
+        services.AddTransient<WorldRenderer>();
+        
         // Controller
-        services.AddSingleton<CameraController>();
+        services.AddTransient<CameraController>();
     }
 }

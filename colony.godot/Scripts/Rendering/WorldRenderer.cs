@@ -1,38 +1,56 @@
+using System;
+using System.Collections.Generic;
+using Colony.Engine.World;
 using Godot;
 
-public partial class WorldRenderer : Node3D
+namespace Colony.Godot.Scripts.Rendering;
+
+public sealed class WorldRenderer
 {
-	private readonly BoxMesh _cubeMesh = new();
-	
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		GenerateFloor();
-	}
+    private readonly LayerRenderer _layerRenderer;
+    private Node3D _root = null!;
+    private readonly Dictionary<int, Node3D> _layers = new();
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-	}
+    public WorldRenderer(LayerRenderer layerRenderer)
+    {
+        _layerRenderer = layerRenderer;
+    }
 
-	private void GenerateFloor()
-	{
-		for (int x = 0; x < 10; x++)
-		{
-			for (int z = 0; z < 10; z++)
-			{
-				AddChild(CreateCube(new Vector3(x, 0, z)));
-			}
-		}
-	}
-	
-	private MeshInstance3D CreateCube(Vector3 position)
-	{
-		return new MeshInstance3D
-		{
-			Name = $"Cube_{position.X}_{position.Z}",
-			Mesh = _cubeMesh,
-			Position = position
-		};
-	}
+    public Node3D Build(Grid grid)
+    {
+        _root = new Node3D
+        {
+            Name = "World",
+        };
+
+        _layers.Clear();
+
+        for (var layer = 0; layer < grid.LayerCount; layer++)
+        {
+            var layerNode = _layerRenderer.Render(grid, layer);
+            
+            _layers.Add(layer, layerNode);
+
+            _root.AddChild(layerNode);
+        }
+
+        return _root;
+    }
+
+    public void SetLayerVisible(int layer, bool visible)
+    {
+        if (!_layers.TryGetValue(layer, out var layerNode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(layer));
+        }
+        
+        layerNode.Visible = visible;
+    }
+    public void ShowOnlyLayer(int layer)
+    {
+        foreach (var pair in _layers)
+        {
+            pair.Value.Visible = pair.Key == layer;
+        }
+    }
 }

@@ -9,8 +9,6 @@ public static class DependencyInjector
 {
     public static void Inject(object target, IServiceProvider services)
     {
-        GD.Print($"Injecting dependencies into {target.GetType().Name}");
-        
         var interfaces = target
             .GetType()
             .GetInterfaces()
@@ -22,8 +20,6 @@ public static class DependencyInjector
         foreach (var injectable in interfaces)
         {
             var dependencyType = injectable.GetGenericArguments()[0];
-
-            GD.Print($"Injecting {dependencyType.Name}");
 
             var dependency = services.GetRequiredService(dependencyType);
 
