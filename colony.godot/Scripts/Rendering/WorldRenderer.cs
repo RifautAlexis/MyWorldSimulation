@@ -7,9 +7,12 @@ namespace Colony.Godot.Scripts.Rendering;
 
 public sealed class WorldRenderer
 {
-    private readonly LayerRenderer _layerRenderer;
     private Node3D _root = null!;
+    private readonly LayerRenderer _layerRenderer;
+    
     private readonly Dictionary<int, Node3D> _layers = new();
+    private int _selectedLayer;
+    private LayerVisibilityMode _layerVisibilityMode;
 
     public WorldRenderer(LayerRenderer layerRenderer)
     {
@@ -24,6 +27,10 @@ public sealed class WorldRenderer
         };
 
         _layers.Clear();
+        
+        // Define initial values
+        _selectedLayer = 0;
+        _layerVisibilityMode = LayerVisibilityMode.SelectedAndBelow;
 
         for (var layer = 0; layer < grid.LayerCount; layer++)
         {
@@ -33,24 +40,45 @@ public sealed class WorldRenderer
 
             _root.AddChild(layerNode);
         }
+        
+        ApplyVisibility();
 
         return _root;
     }
 
-    public void SetLayerVisible(int layer, bool visible)
+    public void SetSelectedLayer(int layer)
     {
-        if (!_layers.TryGetValue(layer, out var layerNode))
+        if (!_layers.ContainsKey(layer))
         {
             throw new ArgumentOutOfRangeException(nameof(layer));
         }
         
-        layerNode.Visible = visible;
+        _selectedLayer = layer;
+
+        ApplyVisibility();
     }
-    public void ShowOnlyLayer(int layer)
+    
+    public void SetVisibilityMode(LayerVisibilityMode mode)
+    {
+        _layerVisibilityMode = mode;
+
+        ApplyVisibility();
+    }
+    
+    private void ApplyVisibility()
     {
         foreach (var pair in _layers)
         {
-            pair.Value.Visible = pair.Key == layer;
+            var layer = pair.Key;
+            var node = pair.Value;
+
+            node.Visible = _layerVisibilityMode switch
+            {
+                LayerVisibilityMode.SelectedAndBelow
+                    => layer <= _selectedLayer,
+
+                _ => false
+            };
         }
     }
 }
