@@ -1,4 +1,3 @@
-using System;
 using Colony.Engine.Simulation;
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Colony.Godot.Scripts.Rendering;
@@ -8,17 +7,21 @@ using Godot;
 
 namespace Colony.Godot.Scripts.Screens;
 
-public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRenderer>, IInject<CameraController>
+public partial class WorldScreen : Node3D,
+                                   IInject<WorldRenderer>,
+                                   IInject<CameraController>
 {
-    private SimulationEngine _simulationEngine = null!;
-    private WorldRenderer _worldRenderer = null!;
     private CameraController _cameraController = null!;
     private LayerSelector _layerSelector = null!;
-    private CanvasLayer _uiLayer = null!;
+    private ColonySimulation _simulation = null!;
 
-    public void Inject(SimulationEngine simulationEngine)
+    private Label _timeLabel = null!;
+    private CanvasLayer _uiLayer = null!;
+    private WorldRenderer _worldRenderer = null!;
+
+    public void Inject(CameraController cameraController)
     {
-        _simulationEngine = simulationEngine;
+        _cameraController = cameraController;
     }
 
     public void Inject(WorldRenderer worldRenderer)
@@ -26,14 +29,15 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
         _worldRenderer = worldRenderer;
     }
 
-    public void Inject(CameraController cameraController)
+    public void Initialize(ColonySimulation simulation)
     {
-        _cameraController = cameraController;
+        _simulation = simulation;
     }
 
     public override void _Ready()
     {
-        var world = _worldRenderer.Build(_simulationEngine.World);
+        var world = _worldRenderer.Build(_simulation.World);
+        Initialize(_simulation);
 
         AddChild(world);
 
@@ -44,8 +48,12 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
 
     public override void _Process(double delta)
     {
+        _simulation.Tick(delta);
+
         _cameraController.UpdateMovement(delta);
         _cameraController.UpdateZoom(delta);
+
+        UpdateTimeLabel();
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -64,14 +72,30 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
             case Key.E:
                 _cameraController.RotateClockwise();
                 break;
-            default:
+            case Key.Space:
+                TogglePause();
+                break;
+            case Key.F1:
+                _simulation.SetSpeed(0.5);
+                break;
+
+            case Key.F2:
+                _simulation.SetSpeed(1.0);
+                break;
+
+            case Key.F3:
+                _simulation.SetSpeed(2.0);
+                break;
+
+            case Key.F4:
+                _simulation.SetSpeed(5.0);
                 break;
         }
     }
 
     private void SetupCamera()
     {
-        var initialCenter = new Vector3(_simulationEngine.World.Width / 2, 0, _simulationEngine.World.Height / 2);
+        var initialCenter = new Vector3(_simulation.World.Width / 2, 0, _simulation.World.Height / 2);
 
         var cameraPivot = new Camera3D
         {
@@ -82,7 +106,7 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
 
         var camera = new Camera3D
         {
-            Name = "Camera3D"
+            Name = "Camera3D",
         };
 
         cameraPivot.AddChild(camera);
@@ -110,11 +134,12 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
     {
         _uiLayer = new CanvasLayer
         {
-            Name = "UI"
+            Name = "UI",
         };
 
         AddChild(_uiLayer);
 
+        CreateTimeLabel();
         CreateLayerSelector();
     }
 
@@ -126,12 +151,39 @@ public partial class World : Node3D, IInject<SimulationEngine>, IInject<WorldRen
 
         _uiLayer.AddChild(_layerSelector);
 
-        _layerSelector.Initialize(0, _simulationEngine.World.LayerCount - 1, 0);
+        _layerSelector.Initialize(0, _simulation.World.LayerCount - 1, 0);
 
         _layerSelector.SetAnchorsPreset(Control.LayoutPreset.TopRight);
         _layerSelector.OffsetLeft = -120;
         _layerSelector.OffsetTop = 30;
         _layerSelector.OffsetRight = -20;
         _layerSelector.OffsetBottom = 280;
+    }
+
+    private void CreateTimeLabel()
+    {
+        _timeLabel = new Label
+        {
+            Text = "Day 0 - 00:00",
+        };
+
+        _timeLabel.Position = new Vector2(20, 20);
+
+        _uiLayer.AddChild(_timeLabel);
+    }
+
+    private void UpdateTimeLabel()
+    {
+        var time = _simulation.GameTime;
+
+        _timeLabel.Text = $"Day {time.Day} - {time.Hour:00}:{time.Minute:00}";
+    }
+
+    private void TogglePause()
+    {
+        if (_simulation.IsPaused)
+            _simulation.Resume();
+        else
+            _simulation.Pause();
     }
 }

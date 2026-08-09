@@ -1,5 +1,4 @@
-using System;
-using Colony.Engine.Simulation;
+using Colony.Engine.Infrastructure;
 using Colony.Godot.Scripts.Events;
 using Colony.Godot.Scripts.Rendering;
 using Colony.Godot.Scripts.Screens;
@@ -15,7 +14,7 @@ public static class ServiceConfiguration
         var services = new ServiceCollection();
 
         RegisterServices(services);
-        
+
         return services.BuildServiceProvider();
     }
 
@@ -26,18 +25,18 @@ public static class ServiceConfiguration
         services.AddSingleton<SceneManager>();
         services.AddSingleton<ScreenFactory>();
         services.AddSingleton<ScreenNavigator>();
-        
+
         // Engine - external library
-        services.AddSingleton<SimulationEngine>();
-        
+        services.AddColonyEngine();
+
         // Screens
-        services.AddTransient<MainMenu>();
-        services.AddTransient<World>();
-        
+        services.AddTransient<MainMenuScreen>();
+        services.AddTransient<WorldScreen>();
+
         // Renderers
         services.AddSingleton<LayerRenderer>();
         services.AddTransient<WorldRenderer>();
-        
+
         // Controller
         services.AddTransient<CameraController>();
     }

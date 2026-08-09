@@ -7,12 +7,12 @@ namespace Colony.Godot.Scripts.Rendering;
 
 public sealed class WorldRenderer
 {
-    private Node3D _root = null!;
     private readonly LayerRenderer _layerRenderer;
-    
+
     private readonly Dictionary<int, Node3D> _layers = new();
-    private int _selectedLayer;
     private LayerVisibilityMode _layerVisibilityMode;
+    private Node3D _root = null!;
+    private int _selectedLayer;
 
     public WorldRenderer(LayerRenderer layerRenderer)
     {
@@ -23,11 +23,11 @@ public sealed class WorldRenderer
     {
         _root = new Node3D
         {
-            Name = "World",
+            Name = "WorldScreen",
         };
 
         _layers.Clear();
-        
+
         // Define initial values
         _selectedLayer = 0;
         _layerVisibilityMode = LayerVisibilityMode.SelectedAndBelow;
@@ -35,12 +35,12 @@ public sealed class WorldRenderer
         for (var layer = 0; layer < grid.LayerCount; layer++)
         {
             var layerNode = _layerRenderer.Render(grid, layer);
-            
+
             _layers.Add(layer, layerNode);
 
             _root.AddChild(layerNode);
         }
-        
+
         ApplyVisibility();
 
         return _root;
@@ -48,23 +48,20 @@ public sealed class WorldRenderer
 
     public void SetSelectedLayer(int layer)
     {
-        if (!_layers.ContainsKey(layer))
-        {
-            throw new ArgumentOutOfRangeException(nameof(layer));
-        }
-        
+        if (!_layers.ContainsKey(layer)) throw new ArgumentOutOfRangeException(nameof(layer));
+
         _selectedLayer = layer;
 
         ApplyVisibility();
     }
-    
+
     public void SetVisibilityMode(LayerVisibilityMode mode)
     {
         _layerVisibilityMode = mode;
 
         ApplyVisibility();
     }
-    
+
     private void ApplyVisibility()
     {
         foreach (var pair in _layers)
@@ -77,7 +74,7 @@ public sealed class WorldRenderer
                 LayerVisibilityMode.SelectedAndBelow
                     => layer <= _selectedLayer,
 
-                _ => false
+                _ => false,
             };
         }
     }

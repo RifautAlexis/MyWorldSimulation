@@ -4,20 +4,22 @@ using Godot;
 
 namespace Colony.Godot.Scripts.Infrastructure;
 
-public class ApplicationContext : IInject<ScreenNavigator>, IInject<SceneManager>
+public class ApplicationContext : IInject<ScreenNavigator>,
+                                  IInject<SceneManager>
 {
-    private ScreenNavigator _screenNavigator = null!;
     private SceneManager _sceneManager = null!;
+    private ScreenNavigator _screenNavigator = null!;
+
+    public void Inject(SceneManager dependency)
+    {
+        _sceneManager = dependency;
+    }
 
     public void Inject(ScreenNavigator dependency)
     {
         _screenNavigator = dependency;
     }
-    public void Inject(SceneManager dependency)
-    {
-        _sceneManager = dependency;
-    }
-    
+
     public void Initialize(Node root)
     {
         var screenHost = new ScreenHost();
@@ -26,6 +28,6 @@ public class ApplicationContext : IInject<ScreenNavigator>, IInject<SceneManager
 
         _sceneManager.Initialize(screenHost);
 
-        _screenNavigator.Navigate<MainMenu>();
+        _screenNavigator.Navigate<MainMenuScreen>();
     }
 }
