@@ -164,7 +164,7 @@ public partial class WorldScreen : Node3D,
     {
         _timeLabel = new Label
         {
-            Text = "Day 0 - 00:00",
+            Text = "Day 0 - 00:00 (0 ticks)",
         };
 
         _timeLabel.Position = new Vector2(20, 20);
@@ -176,7 +176,7 @@ public partial class WorldScreen : Node3D,
     {
         var time = _simulation.GameTime;
 
-        _timeLabel.Text = $"Day {time.Day} - {time.Hour:00}:{time.Minute:00}";
+        _timeLabel.Text = $"Day {time.Day} - {time.Hour:00}:{time.Minute:00} ({_simulation.TickNumber} ticks)";
     }
 
     private void TogglePause()

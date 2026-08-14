@@ -5,8 +5,10 @@ public sealed class SimulationClock
     private readonly double _tickInterval;
     private double _accumulator;
 
-    public SimulationClock(double tickPerSecond)
+    public SimulationClock(SimulationSettings settings)
     {
+        var tickPerSecond = settings.TicksPerSecond;
+
         if (tickPerSecond <= 0)
             throw new ArgumentOutOfRangeException(nameof(tickPerSecond), "Tick per second must be greater than zero.");
 
@@ -19,7 +21,7 @@ public sealed class SimulationClock
         _accumulator += deltaTime;
 
         var ticks = 0;
-        
+
         while (_accumulator >= _tickInterval)
         {
             _accumulator -= _tickInterval;

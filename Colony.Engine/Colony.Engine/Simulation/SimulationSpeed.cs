@@ -4,6 +4,11 @@ internal sealed class SimulationSpeed
 {
     public double Multiplier { get; private set; } = 1.0;
 
+    public SimulationSpeed(SimulationSettings settings)
+    {
+        SetMultiplier(settings.SpeedMultiplier);
+    }
+
     public void SetMultiplier(double multiplier)
     {
         if (multiplier <= 0)

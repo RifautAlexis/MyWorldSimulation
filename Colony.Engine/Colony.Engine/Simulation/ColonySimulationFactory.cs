@@ -1,20 +1,26 @@
+using Colony.Engine.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Colony.Engine.Simulation;
 
-public class ColonySimulationFactory
+public sealed class ColonySimulationFactory
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public ColonySimulationFactory(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
     public ColonySimulation CreateNewGame(SimulationSettings settings)
     {
-        var engine = ActivatorUtilities.CreateInstance<SimulationEngine>(_serviceProvider, settings);
+        ArgumentNullException.ThrowIfNull(settings);
 
-        return new ColonySimulation(engine);
+        var services = new ServiceCollection();
+
+        services.AddSingleton(settings);
+
+        services.AddColonySimulationServices();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // var scope = serviceProvider.CreateScope();
+
+        var engine = serviceProvider.GetRequiredService<SimulationEngine>();
+
+        return new ColonySimulation(serviceProvider, engine);
     }
 }

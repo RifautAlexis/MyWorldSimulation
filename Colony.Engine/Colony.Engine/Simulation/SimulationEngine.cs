@@ -1,3 +1,4 @@
+using Colony.Engine.Simulation.Systems;
 using Colony.Engine.World;
 
 namespace Colony.Engine.Simulation;
@@ -5,17 +6,23 @@ namespace Colony.Engine.Simulation;
 internal sealed class SimulationEngine
 {
     private readonly SimulationClock _clock;
-    private readonly SimulationSettings _settings;
     private readonly SimulationSpeed _speed;
+    private readonly IReadOnlyCollection<ISimulationSystem> _systems;
 
     public Grid World { get; }
     public GameTime GameTime { get; }
+    public long TickNumber { get; private set; }
 
-    public SimulationEngine(SimulationSettings settings)
+    public SimulationEngine(SimulationClock clock,
+                            GameTime gameTime,
+                            SimulationSpeed speed,
+                            IEnumerable<ISimulationSystem> systems)
     {
-        _settings = settings;
-        _speed = new SimulationSpeed();
-        _speed.SetMultiplier(settings.SpeedMultiplier);
+        _clock = clock;
+        GameTime = gameTime;
+        _speed = speed;
+
+        _systems = systems.ToArray();
 
         var configuration = new WorldConfiguration
         {
@@ -27,8 +34,6 @@ internal sealed class SimulationEngine
         var terrainGenerator = new TerrainGenerator();
 
         World = new Grid(configuration.Width, configuration.Height, configuration.LayerCount, terrainGenerator);
-        _clock = new SimulationClock(_settings.TicksPerSecond);
-        GameTime = new GameTime(_settings);
     }
 
     public void Update(double deltaTime)
@@ -42,7 +47,11 @@ internal sealed class SimulationEngine
 
     private void ExecuteTick()
     {
-        GameTime.Tick();
+        TickNumber++;
+
+        var context = new SimulationContext(TickNumber, GameTime);
+
+        foreach (var system in _systems) system.Tick(context);
     }
 
     public void SetSpeed(double multiplier)

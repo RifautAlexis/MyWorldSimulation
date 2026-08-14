@@ -35,6 +35,7 @@ public class ScreenFactory
             TicksPerGameMinute = 10,
             MinutesPerGameHour = 60,
             HoursPerGameDay = 24,
+            SpeedMultiplier = 1.0,
         };
 
         var simulation = _simulationFactory.CreateNewGame(settings);
