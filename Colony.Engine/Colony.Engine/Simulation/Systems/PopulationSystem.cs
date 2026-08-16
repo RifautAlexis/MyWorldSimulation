@@ -20,19 +20,78 @@ internal class PopulationSystem : ISimulationSystem
 
     private void UpdateColonist(Colonist colonist, SimulationContext context)
     {
-        var nextX = colonist.Position.X + colonist.Direction;
+        var possibleDirections = new List<int> { 0, 1, 2, 3 }; // Up, Right, Down, Left
+        possibleDirections.RemoveAt(colonist.Direction);
 
+        var currentPosition = colonist.Position;
         var nextPosition = new CellPosition(
-            nextX,
-            colonist.Position.Y,
-            colonist.Position.Layer);
-
-        if (!context.Data.World.CanMove(colonist.Position, nextPosition))
+            currentPosition.X,
+            currentPosition.Y,
+            currentPosition.Layer);
+        switch (colonist.Direction)
         {
-            colonist.ReverseDirection();
-            return;
+            case 0:
+                nextPosition =
+                    new CellPosition(colonist.Position.X, colonist.Position.Y - 1, colonist.Position.Layer);
+                break;
+            case 1:
+                nextPosition =
+                    new CellPosition(colonist.Position.X + 1, colonist.Position.Y, colonist.Position.Layer);
+                break;
+            case 2:
+                nextPosition =
+                    new CellPosition(colonist.Position.X, colonist.Position.Y + 1, colonist.Position.Layer);
+                break;
+            case 3:
+                nextPosition =
+                    new CellPosition(colonist.Position.X - 1, colonist.Position.Y, colonist.Position.Layer);
+                break;
         }
 
+        for (var i = 0; i < 5; i++)
+        {
+            Console.WriteLine(
+                $"Colonist {colonist.Id} checking move from ({currentPosition.X}, {currentPosition.Y}, {currentPosition.Layer}) to ({nextPosition.X}, {nextPosition.Y}, {nextPosition.Layer}) in direction {colonist.Direction}");
+            if (context.Data.World.CanMove(colonist.Position, nextPosition))
+                break;
+
+            var random = new Random();
+            var index = random.Next(possibleDirections.Count);
+            var direction = possibleDirections[index];
+            possibleDirections.Remove(direction);
+            colonist.SetDirection(direction); // Change direction to the new random direction
+
+            nextPosition = new CellPosition(
+                currentPosition.X,
+                currentPosition.Y,
+                currentPosition.Layer);
+
+            switch (colonist.Direction)
+            {
+                case 0:
+                    nextPosition =
+                        new CellPosition(colonist.Position.X, colonist.Position.Y - 1, colonist.Position.Layer);
+                    break;
+                case 1:
+                    nextPosition =
+                        new CellPosition(colonist.Position.X + 1, colonist.Position.Y, colonist.Position.Layer);
+                    break;
+                case 2:
+                    nextPosition =
+                        new CellPosition(colonist.Position.X, colonist.Position.Y + 1, colonist.Position.Layer);
+                    break;
+                case 3:
+                    nextPosition =
+                        new CellPosition(colonist.Position.X - 1, colonist.Position.Y, colonist.Position.Layer);
+                    break;
+                default:
+                    Console.WriteLine($"All directions invalid for colonist {colonist.Id}");
+                    return;
+            }
+        }
+
+        Console.WriteLine(
+            $"Valid direction {colonist.Direction} for colonist {colonist.Id} moving from ({currentPosition.X}, {currentPosition.Y}, {currentPosition.Layer}) to ({nextPosition.X}, {nextPosition.Y}, {nextPosition.Layer})");
         colonist.MoveTo(nextPosition);
     }
 }

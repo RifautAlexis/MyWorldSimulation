@@ -6,13 +6,13 @@ internal sealed class Colonist
 {
     public int Id { get; }
     public CellPosition Position { get; private set; }
-    public int Direction { get; private set; } // Direction the colonist is facing (0-7 for 8 directions)
+    public int Direction { get; private set; } // Direction the colonist is facing (0-3 for 4 directions)
 
-    public Colonist(int id, CellPosition position)
+    public Colonist(int id, CellPosition position, int direction)
     {
         Id = id;
         Position = position;
-        Direction = 1; // Default direction
+        Direction = direction;
     }
 
     public void MoveTo(CellPosition newPosition)
@@ -22,6 +22,11 @@ internal sealed class Colonist
 
     public void ReverseDirection()
     {
-        Direction *= -1;
+        Direction = (Direction + 2) % 4;
+    }
+
+    public void SetDirection(int direction)
+    {
+        Direction = direction;
     }
 }

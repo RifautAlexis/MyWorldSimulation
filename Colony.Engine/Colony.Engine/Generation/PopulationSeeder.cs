@@ -9,10 +9,42 @@ internal sealed class PopulationSeeder
     {
         ArgumentNullException.ThrowIfNull(populationData);
 
-        var colonist = new Colonist(
-            1,
-            new CellPosition(0, 3, 0));
+        var colonists = new List<Colonist>
+        {
+            new(
+                1,
+                new CellPosition(0, 0, 0),
+                0),
+            new(
+                2,
+                new CellPosition(1, 1, 0),
+                1),
+            new(
+                3,
+                new CellPosition(2, 2, 0),
+                2),
+            new(
+                4,
+                new CellPosition(3, 3, 0),
+                3),
+            new(
+                5,
+                new CellPosition(4, 4, 0),
+                3),
+            new(
+                6,
+                new CellPosition(5, 5, 0),
+                2),
+            new(
+                7,
+                new CellPosition(6, 6, 0),
+                1),
+            new(
+                8,
+                new CellPosition(7, 7, 0),
+                0),
+        };
 
-        populationData.AddColonist(colonist);
+        populationData.AddColonists(colonists);
     }
 }

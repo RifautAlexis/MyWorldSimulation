@@ -12,4 +12,11 @@ internal class PopulationData
 
         _colonists.Add(colonist);
     }
+
+    public void AddColonists(IEnumerable<Colonist> colonists)
+    {
+        ArgumentNullException.ThrowIfNull(colonists);
+
+        _colonists.AddRange(colonists);
+    }
 }

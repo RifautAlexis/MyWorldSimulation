@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Colony.Engine.Simulation.Views;
 using Godot;
@@ -43,11 +42,6 @@ public sealed class ColonistRenderer
 
     private static Vector3 ToWorldPosition(ColonistView colonist)
     {
-        Console.WriteLine($"Colonist {colonist.Id} position: ({colonist.X}, {colonist.Layer}, {colonist.Z})");
-        // return new Vector3(
-        //     colonist.X + 0.5f,
-        //     colonist.Layer + 0.5f,
-        //     colonist.Z + 0.5f);
         return new Vector3(
             colonist.X,
             colonist.Layer + 1f,
