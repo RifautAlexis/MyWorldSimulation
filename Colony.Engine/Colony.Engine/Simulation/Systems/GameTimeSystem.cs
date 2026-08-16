@@ -9,6 +9,10 @@ internal class GameTimeSystem : ISimulationSystem
         _gameTime = gameTime;
     }
 
+    public int ExecutionOrder => 0;
+
+    public SimulationPhase SimulationPhase => SimulationPhase.Time;
+
     public void Tick(SimulationContext context)
     {
         _gameTime.Tick();

@@ -1,5 +1,8 @@
+using Colony.Engine.Entities;
+using Colony.Engine.Generation;
 using Colony.Engine.Simulation;
 using Colony.Engine.Simulation.Systems;
+using Colony.Engine.World;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Colony.Engine.Infrastructure;
@@ -15,6 +18,13 @@ public static class EngineServiceCollectionExtensions
 
     internal static IServiceCollection AddColonySimulationServices(this IServiceCollection services)
     {
+        services.AddSingleton<WorldFactory>();
+        services.AddSingleton<PopulationSeeder>();
+
+        services.AddSingleton<Grid>(provider => provider.GetRequiredService<WorldFactory>().CreateDefaultWorld());
+
+        services.AddSingleton<PopulationData>();
+
         services.AddSingleton<SimulationClock>();
         services.AddSingleton<GameTime>();
         services.AddSingleton<SimulationSpeed>();
@@ -24,6 +34,7 @@ public static class EngineServiceCollectionExtensions
         // handling events, or updating the world state. By registering these systems as scoped services,
         // we ensure that each simulation instance has its own set of systems that can be used during the simulation lifecycle.
         services.AddSingleton<ISimulationSystem, GameTimeSystem>();
+        services.AddSingleton<ISimulationSystem, PopulationSystem>();
 
         services.AddSingleton<SimulationEngine>();
 

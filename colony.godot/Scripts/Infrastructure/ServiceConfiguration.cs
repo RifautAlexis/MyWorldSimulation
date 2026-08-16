@@ -36,6 +36,7 @@ public static class ServiceConfiguration
         // Renderers
         services.AddSingleton<LayerRenderer>();
         services.AddTransient<WorldRenderer>();
+        services.AddSingleton<ColonistRenderer>();
 
         // Controller
         services.AddTransient<CameraController>();

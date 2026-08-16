@@ -9,9 +9,14 @@ namespace Colony.Godot.Scripts.Screens;
 
 public partial class WorldScreen : Node3D,
                                    IInject<WorldRenderer>,
-                                   IInject<CameraController>
+                                   IInject<CameraController>,
+                                   IInject<ColonistRenderer>
+
 {
     private CameraController _cameraController = null!;
+    private ColonistRenderer _colonistRenderer = null!;
+
+    private Node3D _colonistRoot = null!;
     private LayerSelector _layerSelector = null!;
     private ColonySimulation _simulation = null!;
 
@@ -22,6 +27,11 @@ public partial class WorldScreen : Node3D,
     public void Inject(CameraController cameraController)
     {
         _cameraController = cameraController;
+    }
+
+    public void Inject(ColonistRenderer colonistRenderer)
+    {
+        _colonistRenderer = colonistRenderer;
     }
 
     public void Inject(WorldRenderer worldRenderer)
@@ -41,6 +51,8 @@ public partial class WorldScreen : Node3D,
 
         AddChild(world);
 
+        CreateColonists();
+
         SetupCamera();
         CreateLight();
         CreateUI();
@@ -49,6 +61,8 @@ public partial class WorldScreen : Node3D,
     public override void _Process(double delta)
     {
         _simulation.Tick(delta);
+
+        UpdateColonists();
 
         _cameraController.UpdateMovement(delta);
         _cameraController.UpdateZoom(delta);
@@ -185,5 +199,27 @@ public partial class WorldScreen : Node3D,
             _simulation.Resume();
         else
             _simulation.Pause();
+    }
+
+    private void CreateColonists()
+    {
+        _colonistRoot = new Node3D
+        {
+            Name = "Colonists",
+        };
+
+        AddChild(_colonistRoot);
+
+        foreach (var colonist in _simulation.Colonists)
+        {
+            var node = _colonistRenderer.Build(colonist);
+
+            _colonistRoot.AddChild(node);
+        }
+    }
+
+    private void UpdateColonists()
+    {
+        foreach (var colonist in _simulation.Colonists) _colonistRenderer.Update(colonist);
     }
 }

@@ -17,8 +17,6 @@ public sealed class ColonySimulationFactory
 
         var serviceProvider = services.BuildServiceProvider();
 
-        // var scope = serviceProvider.CreateScope();
-
         var engine = serviceProvider.GetRequiredService<SimulationEngine>();
 
         return new ColonySimulation(serviceProvider, engine);

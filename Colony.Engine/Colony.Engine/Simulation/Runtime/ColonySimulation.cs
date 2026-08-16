@@ -1,3 +1,4 @@
+using Colony.Engine.Simulation.Views;
 using Colony.Engine.World;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public sealed class ColonySimulation : IDisposable
 
     public bool IsRunning => State == SimulationState.Running;
     public bool IsPaused => State == SimulationState.Paused;
+    public IReadOnlyList<ColonistView> Colonists => _engine.GetColonistViews();
 
     public SimulationState State { get; private set; } = SimulationState.Stopped;
 
