@@ -47,11 +47,11 @@ public partial class WorldScreen : Node3D,
     public override void _Ready()
     {
         var world = _worldRenderer.Build(_simulation.World);
-        Initialize(_simulation);
+        // Initialize(_simulation);
 
         AddChild(world);
 
-        CreateColonists();
+        // CreateColonists();
 
         SetupCamera();
         CreateLight();
@@ -62,7 +62,7 @@ public partial class WorldScreen : Node3D,
     {
         _simulation.Tick(delta);
 
-        UpdateColonists();
+        // UpdateColonists();
 
         _cameraController.UpdateMovement(delta);
         _cameraController.UpdateZoom(delta);

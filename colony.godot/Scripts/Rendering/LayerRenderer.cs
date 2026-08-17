@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Colony.Engine.World;
 using Godot;
 
@@ -7,6 +9,27 @@ public sealed class LayerRenderer
 {
     private const float CellSize = 1.0f;
     private const float BorderOffset = 0.001f;
+    private static readonly Vector3 CellDimensions = new(CellSize, CellSize, CellSize);
+
+    private readonly StandardMaterial3D _borderMaterial = new()
+    {
+        AlbedoColor = new Color(0, 0, 0, 0.35f),
+        ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+        Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+    };
+
+    private readonly BoxMesh _cellMesh = new()
+    {
+        Size = CellDimensions,
+    };
+
+    private readonly Dictionary<TerrainType, StandardMaterial3D> _materials = new()
+    {
+        [TerrainType.Air] = new StandardMaterial3D { AlbedoColor = Colors.Transparent },
+        [TerrainType.Soil] = new StandardMaterial3D { AlbedoColor = Colors.Peru },
+        [TerrainType.Rock] = new StandardMaterial3D { AlbedoColor = Colors.Gray },
+        [TerrainType.Water] = new StandardMaterial3D { AlbedoColor = Colors.Blue },
+    };
 
     public Node3D Render(Grid grid, int layer)
     {
@@ -15,36 +38,60 @@ public sealed class LayerRenderer
             Name = $"Layer_{layer}",
         };
 
+        Console.WriteLine($"Rendering layer {layer}...");
+
+        var positionsByTerrain = new Dictionary<TerrainType, List<Vector3>>();
+        var solidCellCenters = new List<Vector3>();
+
         foreach (var cell in grid.GetLayer(layer))
         {
-            var node = CreateCell(cell);
+            if (cell.TerrainType == TerrainType.Air)
+                continue;
 
-            if (node == null) continue;
+            var position = ToWorldPosition(cell.Position);
 
-            root.AddChild(node);
+            solidCellCenters.Add(position);
+
+            if (!positionsByTerrain.TryGetValue(cell.TerrainType, out var positions))
+            {
+                positions = new List<Vector3>();
+                positionsByTerrain[cell.TerrainType] = positions;
+            }
+
+            positions.Add(position);
         }
 
-        var borders = CreateBorders(grid, layer);
-        root.AddChild(borders);
+        foreach (var pair in positionsByTerrain)
+            root.AddChild(CreateCells(layer, pair.Key, pair.Value));
+
+        var borders = CreateBorders(layer, solidCellCenters);
+
+        if (borders != null)
+            root.AddChild(borders);
 
         return root;
     }
 
-    private MeshInstance3D? CreateCell(Cell cell)
+    private MultiMeshInstance3D CreateCells(int layer,
+                                            TerrainType terrainType,
+                                            IReadOnlyList<Vector3> positions)
     {
-        if (cell.TerrainType == TerrainType.Air) return null;
-
-        var mesh = new MeshInstance3D
+        var multiMesh = new MultiMesh
         {
-            Mesh = new BoxMesh
-            {
-                Size = new Vector3(CellSize, CellSize, CellSize),
-            },
-            MaterialOverride = CreateMaterial(cell.TerrainType),
-            Position = ToWorldPosition(cell.Position),
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            Mesh = _cellMesh,
+            InstanceCount = positions.Count,
         };
 
-        return mesh;
+        for (var index = 0; index < positions.Count; index++)
+            multiMesh.SetInstanceTransform(index, new Transform3D(Basis.Identity, positions[index]));
+
+        return new MultiMeshInstance3D
+        {
+            Name = $"Layer_{layer}_{terrainType}",
+            Multimesh = multiMesh,
+            MaterialOverride = GetMaterial(terrainType),
+        };
     }
 
     private Vector3 ToWorldPosition(CellPosition position)
@@ -52,41 +99,32 @@ public sealed class LayerRenderer
         return new Vector3(position.X, position.Layer, position.Y);
     }
 
-    private StandardMaterial3D CreateMaterial(TerrainType terrainType)
+    private StandardMaterial3D GetMaterial(TerrainType terrainType)
     {
-        return terrainType switch
-        {
-            TerrainType.Air => new StandardMaterial3D { AlbedoColor = Colors.Transparent },
-            TerrainType.Soil => new StandardMaterial3D { AlbedoColor = Colors.Brown },
-            TerrainType.Rock => new StandardMaterial3D { AlbedoColor = Colors.Gray },
-            TerrainType.Water => new StandardMaterial3D { AlbedoColor = Colors.Blue },
-            _ => new StandardMaterial3D { AlbedoColor = Colors.DeepPink },
-        };
+        if (_materials.TryGetValue(terrainType, out var material))
+            return material;
+
+        var fallback = new StandardMaterial3D { AlbedoColor = Colors.DeepPink };
+
+        _materials[terrainType] = fallback;
+
+        return fallback;
     }
 
-    private MeshInstance3D CreateBorders(Grid grid, int layer)
+    private MeshInstance3D? CreateBorders(int layer, IReadOnlyList<Vector3> solidCellCenters)
     {
-        var mesh = new ImmediateMesh();
+        if (solidCellCenters.Count == 0)
+            return null;
 
-        var material = new StandardMaterial3D
-        {
-            AlbedoColor = new Color(0, 0, 0, 0.35f),
-            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-        };
+        var mesh = new ImmediateMesh();
 
         mesh.SurfaceBegin(
             Mesh.PrimitiveType.Lines,
-            material
+            _borderMaterial
         );
 
-        foreach (var cell in grid.GetLayer(layer))
-        {
-            if (cell.TerrainType == TerrainType.Air)
-                continue;
-
-            AddCubeEdges(mesh, ToWorldPosition(cell.Position));
-        }
+        foreach (var solidCellCenter in solidCellCenters)
+            AddCubeEdges(mesh, solidCellCenter);
 
         mesh.SurfaceEnd();
 

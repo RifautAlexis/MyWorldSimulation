@@ -15,7 +15,7 @@ internal class PopulationSystem : ISimulationSystem
         if (context.TickNumber % MovementInterval != 0)
             return;
 
-        foreach (var colonist in context.Data.Population.Colonists) UpdateColonist(colonist, context);
+        // foreach (var colonist in context.Data.Population.Colonists) UpdateColonist(colonist, context);
     }
 
     private void UpdateColonist(Colonist colonist, SimulationContext context)
