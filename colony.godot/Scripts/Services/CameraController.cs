@@ -1,22 +1,33 @@
+using System;
 using Godot;
 
 namespace Colony.Godot.Scripts.Services;
 
 public class CameraController
 {
-    private Node3D _cameraPivot = null!;
-    private Camera3D _camera = null!;
-
-    private Vector3 _focusPoint = Vector3.Zero;
-
-    private float _zoomDistance = 20.0f;
     private const float MinZoomDistance = 5.0f;
-    private const float MaxZoomDistance = 40.0f;
-    private const float ZoomSpeed = 10.0f;
+    private const float MaxZoomDistance = 100.0f;
+    private const float MouseWheelZoomStep = 1.0f;
+    private const float ZoomSpeed = 20.0f;
+    private const float MovementSpeed = 20.0f;
+    private const float MouseOrbitSensitivity = 0.006f;
+    private const float RotationSmoothingSpeed = 16.0f;
+    private const float MinPitchDegrees = 20.0f;
+    private const float MaxPitchDegrees = 80.0f;
+    private const float InitialYawDegrees = 45.0f;
+    private const float InitialPitchDegrees = 35.26439f;
+    private const float MousePanSensitivity = 0.05f;
 
-    private const float MovementSpeed = 10.0f;
-
-    private int _rotationQuarterTurns = 0;
+    private Camera3D _camera = null!;
+    private Node3D _cameraPivot = null!;
+    private Vector3 _focusPoint = Vector3.Zero;
+    private bool _isMovingWithMouse;
+    private bool _isOrbitingWithMouse;
+    private float _pitch = Mathf.DegToRad(InitialPitchDegrees);
+    private float _targetPitch = Mathf.DegToRad(InitialPitchDegrees);
+    private float _targetYaw = Mathf.DegToRad(InitialYawDegrees);
+    private float _yaw = Mathf.DegToRad(InitialYawDegrees);
+    private float _zoomDistance = 20.0f;
 
     public void Initialize(Node3D cameraPivot, Camera3D camera, Vector3 focusPoint)
     {
@@ -27,104 +38,129 @@ public class CameraController
         ApplyCameraTransform();
     }
 
-    public void SetFocusPoint(Vector3 focusPoint)
+    public void HandleInput(InputEvent @event)
     {
-        _focusPoint = focusPoint;
-        
-        ApplyCameraTransform();
+        if (@event is InputEventMouseButton emb)
+        {
+            switch (emb.ButtonIndex)
+            {
+                case MouseButton.Right:
+                    _isOrbitingWithMouse = emb.Pressed;
+
+                    Input.MouseMode = _isOrbitingWithMouse
+                        ? Input.MouseModeEnum.Captured
+                        : Input.MouseModeEnum.Visible;
+
+                    break;
+
+                case MouseButton.Left:
+                    _isMovingWithMouse = emb.Pressed;
+                    break;
+
+                case MouseButton.WheelUp when emb.Pressed:
+                    if (AdjustZoom(-MouseWheelZoomStep))
+                        ApplyCameraTransform();
+
+                    break;
+
+                case MouseButton.WheelDown when emb.Pressed:
+                    if (AdjustZoom(MouseWheelZoomStep))
+                        ApplyCameraTransform();
+
+                    break;
+            }
+        }
+
+        if (@event is InputEventMouseMotion emm)
+        {
+            if (_isOrbitingWithMouse)
+            {
+                _targetYaw -= emm.Relative.X * MouseOrbitSensitivity;
+                _targetPitch = Mathf.Clamp(
+                    _targetPitch - emm.Relative.Y * MouseOrbitSensitivity,
+                    Mathf.DegToRad(MinPitchDegrees),
+                    Mathf.DegToRad(MaxPitchDegrees)
+                );
+            }
+
+            if (_isMovingWithMouse) MoveFocus(emm.Relative);
+        }
     }
 
-    public void UpdateMovement(double delta)
+    public void Update(double delta)
     {
         if (_camera == null)
             return;
+
+        var hasChanged = false;
 
         var forwardInput = 0.0f;
         var rightInput = 0.0f;
 
-        if (Input.IsKeyPressed(Key.Up))
+        if (Input.IsKeyPressed(Key.Z))
             forwardInput += 1.0f;
-        if (Input.IsKeyPressed(Key.Down))
+        if (Input.IsKeyPressed(Key.S))
             forwardInput -= 1.0f;
-        if (Input.IsKeyPressed(Key.Right))
+        if (Input.IsKeyPressed(Key.D))
             rightInput += 1.0f;
-        if (Input.IsKeyPressed(Key.Left))
+        if (Input.IsKeyPressed(Key.Q))
             rightInput -= 1.0f;
 
-        if (Mathf.IsZeroApprox(forwardInput) && Mathf.IsZeroApprox(rightInput))
-            return;
-        
-        // Direction from camera toward the focus point.
-        var forward = _focusPoint - _camera.GlobalPosition;
+        if (!Mathf.IsZeroApprox(forwardInput) || !Mathf.IsZeroApprox(rightInput))
+        {
+            // Direction from camera toward the focus point.
+            var forward = _focusPoint - _camera.GlobalPosition;
 
-        // We only want horizontal movement.
-        forward.Y = 0;
+            // We only want horizontal movement.
+            forward.Y = 0;
 
-        forward = forward.Normalized();
+            forward = forward.Normalized();
 
-        // Get the direction to the camera's right.
-        var right = forward.Cross(Vector3.Up).Normalized();
+            // Get the direction to the camera's right.
+            var right = forward.Cross(Vector3.Up).Normalized();
 
-        var direction = forward * forwardInput + right * rightInput;
-        
-        direction = direction.Normalized();
+            var direction = forward * forwardInput + right * rightInput;
 
-        // Apply speed and delta
-        direction *= MovementSpeed * (float)delta;
+            direction = direction.Normalized();
 
-        _focusPoint += direction;
+            // Apply speed and delta.
+            direction *= MovementSpeed * (float)delta;
 
-        ApplyCameraTransform();
-    }
+            _focusPoint += direction;
+            hasChanged = true;
+        }
 
-    public void UpdateZoom(double delta)
-    {
-        if (_camera == null)
-            return;
-
-        var zoomDirection = 0.0f;
+        var zoomDistance = MouseWheelZoomStep * ZoomSpeed * (float)delta;
 
         if (Input.IsKeyPressed(Key.Pageup))
-            zoomDirection -= 1.0f;
+            hasChanged = AdjustZoom(-zoomDistance) || hasChanged;
+
         if (Input.IsKeyPressed(Key.Pagedown))
-            zoomDirection += 1.0f;
+            hasChanged = AdjustZoom(zoomDistance) || hasChanged;
 
-        if (Mathf.IsZeroApprox(zoomDirection))
-            return;
+        var smoothingFactor = 1.0f - Mathf.Exp(-RotationSmoothingSpeed * (float)delta);
+        var newYaw = Mathf.LerpAngle(_yaw, _targetYaw, smoothingFactor);
+        var newPitch = Mathf.Lerp(_pitch, _targetPitch, smoothingFactor);
 
-        _zoomDistance += zoomDirection * ZoomSpeed * (float)delta;
+        if (!Mathf.IsEqualApprox(_yaw, newYaw) || !Mathf.IsEqualApprox(_pitch, newPitch))
+        {
+            _yaw = newYaw;
+            _pitch = newPitch;
+            hasChanged = true;
+        }
 
-        _zoomDistance = Mathf.Clamp(
-            _zoomDistance,
-            MinZoomDistance,
-            MaxZoomDistance
-        );
-
-        ApplyCameraTransform();
+        if (hasChanged)
+            ApplyCameraTransform();
     }
 
     public void RotateClockwise()
     {
-        _rotationQuarterTurns++;
-
-        if (_rotationQuarterTurns >= 4)
-        {
-            _rotationQuarterTurns = 0;
-        }
-
-        ApplyCameraTransform();
+        _targetYaw += Mathf.Pi / 2.0f;
     }
 
     public void RotateCounterClockwise()
     {
-        _rotationQuarterTurns--;
-
-        if (_rotationQuarterTurns < 0)
-        {
-            _rotationQuarterTurns = 3;
-        }
-
-        ApplyCameraTransform();
+        _targetYaw -= Mathf.Pi / 2.0f;
     }
 
     private void ApplyCameraTransform()
@@ -135,19 +171,49 @@ public class CameraController
         // The pivot is always located at the point
         // around which the camera orbits.
         _cameraPivot.Position = _focusPoint;
+        _cameraPivot.Rotation = Vector3.Zero;
 
-        // Rotate the pivot around the world's Y axis.
-        _cameraPivot.Rotation = new Vector3(
-            0,
-            Mathf.DegToRad(_rotationQuarterTurns * 90.0f),
-            0);
-
-        // Camera position is LOCAL to the pivot.
-        var cameraDirection = new Vector3(1, 1, 1).Normalized();
+        var cameraDirection = new Vector3(
+            Mathf.Sin(_yaw) * Mathf.Cos(_pitch),
+            Mathf.Sin(_pitch),
+            Mathf.Cos(_yaw) * Mathf.Cos(_pitch)
+        );
 
         _camera.Position = cameraDirection * _zoomDistance;
-
-        // Look toward the pivot's origin.
         _camera.LookAt(_cameraPivot.GlobalPosition);
+    }
+
+    private bool AdjustZoom(float zoomDelta)
+    {
+        var previousDistance = _zoomDistance;
+        _zoomDistance = Mathf.Clamp(
+            _zoomDistance + zoomDelta,
+            MinZoomDistance,
+            MaxZoomDistance
+        );
+
+        return !Mathf.IsEqualApprox(previousDistance, _zoomDistance);
+    }
+
+    private void MoveFocus(Vector2 screenDelta)
+    {
+        var forward = _focusPoint - _camera.GlobalPosition;
+
+        forward.Y = 0;
+
+        if (forward.LengthSquared() < Mathf.Epsilon)
+            return;
+
+        forward = forward.Normalized();
+
+        var right = forward.Cross(Vector3.Up).Normalized();
+
+        var movement =
+            -right * screenDelta.X * MousePanSensitivity +
+            -forward * screenDelta.Y * MousePanSensitivity;
+
+        _focusPoint += movement;
+
+        ApplyCameraTransform();
     }
 }

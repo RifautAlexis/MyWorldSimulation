@@ -5,12 +5,12 @@ namespace Colony.Godot.Scripts.UI;
 
 public partial class LayerSelector : Control
 {
-    private VSlider _slider = null!;
     private Label _layerLabel = null!;
-    
+    private VSlider _slider = null!;
+
     public event Action<int>? LayerSelected;
 
-    public void Initialize(int minimumLayerCount,  int maximumLayerCount, int selectedLayer)
+    public void Initialize(int minimumLayerCount, int maximumLayerCount, int selectedLayer)
     {
         if (maximumLayerCount < minimumLayerCount)
             throw new ArgumentException(
@@ -18,28 +18,26 @@ public partial class LayerSelector : Control
 
         if (selectedLayer < minimumLayerCount ||
             selectedLayer > maximumLayerCount)
-        {
             throw new ArgumentOutOfRangeException(
                 nameof(selectedLayer));
-        }
 
         BuildUI(minimumLayerCount, maximumLayerCount, selectedLayer);
     }
 
-    private void BuildUI(int minimumLayerCount,  int maximumLayerCount, int selectedLayer)
+    private void BuildUI(int minimumLayerCount, int maximumLayerCount, int selectedLayer)
     {
         var layout = new VBoxContainer
         {
             CustomMinimumSize = new Vector2(100, 250),
             Alignment = BoxContainer.AlignmentMode.Center,
         };
-        
+
         AddChild(layout);
-        
+
         CreateLayerLabel(selectedLayer);
         layout.AddChild(_layerLabel);
-        
-        CreateSlider(minimumLayerCount,  maximumLayerCount, selectedLayer);
+
+        CreateSlider(minimumLayerCount, maximumLayerCount, selectedLayer);
         layout.AddChild(_slider);
 
         UpdateLabel((int)_slider.Value);
@@ -50,7 +48,7 @@ public partial class LayerSelector : Control
         var layer = (int)value;
 
         UpdateLabel(layer);
-        
+
         LayerSelected?.Invoke((int)value);
     }
 
@@ -65,7 +63,7 @@ public partial class LayerSelector : Control
         _layerLabel.CustomMinimumSize = new Vector2(100, 30);
     }
 
-    private void CreateSlider(int minimumLayerCount,  int maximumLayerCount, int selectedLayer)
+    private void CreateSlider(int minimumLayerCount, int maximumLayerCount, int selectedLayer)
     {
         _slider = new VSlider
         {
@@ -74,7 +72,7 @@ public partial class LayerSelector : Control
             Step = 1,
             Value = selectedLayer,
             CustomMinimumSize = new Vector2(30, 200),
-            SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter,
+            SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
         };
 
         _slider.ValueChanged += OnSliderValueChanged;

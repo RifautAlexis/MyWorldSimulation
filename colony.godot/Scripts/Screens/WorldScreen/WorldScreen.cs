@@ -47,7 +47,6 @@ public partial class WorldScreen : Node3D,
     public override void _Ready()
     {
         var world = _worldRenderer.Build(_simulation.World);
-        // Initialize(_simulation);
 
         AddChild(world);
 
@@ -64,14 +63,15 @@ public partial class WorldScreen : Node3D,
 
         // UpdateColonists();
 
-        _cameraController.UpdateMovement(delta);
-        _cameraController.UpdateZoom(delta);
+        _cameraController.Update(delta);
 
         UpdateTimeLabel();
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        _cameraController.HandleInput(@event);
+
         if (@event is not InputEventKey keyEvent)
             return;
 
@@ -111,7 +111,7 @@ public partial class WorldScreen : Node3D,
     {
         var initialCenter = new Vector3(_simulation.World.Width / 2, 0, _simulation.World.Height / 2);
 
-        var cameraPivot = new Camera3D
+        var cameraPivot = new Node3D
         {
             Name = "CameraPivot",
         };

@@ -7,5 +7,6 @@ public partial class ScreenHost : Control
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        MouseFilter = MouseFilterEnum.Ignore;
     }
 }

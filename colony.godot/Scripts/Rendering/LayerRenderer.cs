@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Colony.Engine.World;
 using Godot;
@@ -37,8 +36,6 @@ public sealed class LayerRenderer
         {
             Name = $"Layer_{layer}",
         };
-
-        Console.WriteLine($"Rendering layer {layer}...");
 
         var positionsByTerrain = new Dictionary<TerrainType, List<Vector3>>();
         var solidCellCenters = new List<Vector3>();
