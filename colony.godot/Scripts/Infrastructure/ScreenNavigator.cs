@@ -1,4 +1,5 @@
 using Colony.Godot.Scripts.Events;
+using Colony.Godot.Scripts.Screens;
 using Godot;
 
 namespace Colony.Godot.Scripts.Infrastructure;
@@ -14,6 +15,7 @@ public sealed class ScreenNavigator
         _sceneManager = sceneManager;
 
         eventBus.Subscribe<NewGameRequested>(OnNewGameRequested);
+        eventBus.Subscribe<MainMenuRequested>(_ => Navigate<MainMenuScreen>());
     }
 
     public void Navigate<T>() where T : Node
