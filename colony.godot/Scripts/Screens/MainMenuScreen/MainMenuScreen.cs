@@ -1,4 +1,3 @@
-using Colony.Engine.Simulation;
 using Colony.Godot.Scripts.Events;
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Godot;
@@ -6,19 +5,11 @@ using Godot;
 namespace Colony.Godot.Scripts.Screens;
 
 public partial class MainMenuScreen : Control,
-                                      IInject<IEventBus>,
-                                      IInject<ColonySimulationFactory>
+                                      IInject<IEventBus>
 {
     private IEventBus _eventBus = null!;
-    private Button _exitButton;
-
-    private Button _playButton;
-    private ColonySimulationFactory _simulationFactory = null!;
-
-    public void Inject(ColonySimulationFactory simulationFactory)
-    {
-        _simulationFactory = simulationFactory;
-    }
+    private Button _exitButton = null!;
+    private Button _playButton = null!;
 
     public void Inject(IEventBus eventBus)
     {
@@ -68,7 +59,8 @@ public partial class MainMenuScreen : Control,
 
     private void OnPlayPressed()
     {
-        _eventBus.Publish(new NewGameRequested());
+        // _eventBus.Publish(new NewGameRequested());
+        _eventBus.Publish(new MapGenerationSetupRequested());
     }
 
 

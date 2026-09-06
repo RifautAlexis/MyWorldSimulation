@@ -1,5 +1,4 @@
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
-using Colony.Godot.Scripts.Screens;
 using Godot;
 
 namespace Colony.Godot.Scripts.Infrastructure;
@@ -28,6 +27,6 @@ public class ApplicationContext : IInject<ScreenNavigator>,
 
         _sceneManager.Initialize(screenHost);
 
-        _screenNavigator.Navigate<MainMenuScreen>();
+        _screenNavigator.NavigateTo(AppRoute.MainMenu);
     }
 }

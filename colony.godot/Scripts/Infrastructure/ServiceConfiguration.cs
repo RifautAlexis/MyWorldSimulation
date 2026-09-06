@@ -2,6 +2,7 @@ using Colony.Engine.Infrastructure;
 using Colony.Godot.Scripts.Events;
 using Colony.Godot.Scripts.Rendering;
 using Colony.Godot.Scripts.Screens;
+using Colony.Godot.Scripts.Screens.MapGenerationSetupScreen;
 using Colony.Godot.Scripts.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,7 @@ public static class ServiceConfiguration
         services.AddSingleton<SceneManager>();
         services.AddSingleton<ScreenFactory>();
         services.AddSingleton<ScreenNavigator>();
+        services.AddSingleton<GameSessionBuilder>();
 
         // Engine - external library
         services.AddColonyEngine();
@@ -32,6 +34,7 @@ public static class ServiceConfiguration
         // Screens
         services.AddTransient<MainMenuScreen>();
         services.AddTransient<WorldScreen>();
+        services.AddTransient<MapGenerationSetupScreen>();
 
         // Renderers
         services.AddSingleton<LayerRenderer>();
