@@ -10,6 +10,7 @@ public sealed class ScreenNavigator : IScreenNavigator
     private readonly Stack<BaseScreen> _history = new();
     private readonly Node _root;
     private readonly Dictionary<string, Func<BaseScreen>> _routes = new(StringComparer.OrdinalIgnoreCase);
+    private object? _currentPayload;
 
     public ScreenNavigator(Node root)
     {
@@ -25,26 +26,14 @@ public sealed class ScreenNavigator : IScreenNavigator
         _routes[route] = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
-    public void NavigateTo(string route)
+    public TPayload? GetPayload<TPayload>() where TPayload : class
     {
-        if (!_routes.TryGetValue(route, out var factory))
-            throw new InvalidOperationException($"No screen registered for route '{route}'.");
+        return _currentPayload as TPayload;
+    }
 
-        var screen = factory();
-        if (screen is null) throw new InvalidOperationException($"Factory for route '{route}' returned a null screen.");
-
-        if (_history.Count > 0)
-        {
-            var current = _history.Peek();
-            current.OnExit();
-            current.Hide();
-            _root.RemoveChild(current);
-        }
-
-        _root.AddChild(screen);
-        screen.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _history.Push(screen);
-        screen.OnEnter();
+    public void ClearPayload()
+    {
+        _currentPayload = null;
     }
 
     public void NavigateBack()
@@ -62,6 +51,34 @@ public sealed class ScreenNavigator : IScreenNavigator
         previous.Show();
         _root.AddChild(previous);
         previous.OnEnter();
+    }
+
+    public void NavigateTo(string route, object? payload = null)
+    {
+        if (!_root.IsInsideTree() || !_root.IsNodeReady())
+            throw new InvalidOperationException("Cannot navigate before the navigator root is ready.");
+
+        if (!_routes.TryGetValue(route, out var factory))
+            throw new InvalidOperationException($"No screen registered for route '{route}'.");
+
+        ClearPayload();
+
+        _currentPayload = payload;
+        var screen = factory();
+        if (screen is null) throw new InvalidOperationException($"Factory for route '{route}' returned a null screen.");
+
+        if (_history.Count > 0)
+        {
+            var current = _history.Peek();
+            current.OnExit();
+            current.Hide();
+            _root.RemoveChild(current);
+        }
+
+        _root.AddChild(screen);
+        screen.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        _history.Push(screen);
+        screen.OnEnter();
     }
 
     public void Clear()

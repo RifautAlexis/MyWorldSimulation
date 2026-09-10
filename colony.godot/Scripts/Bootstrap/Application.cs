@@ -2,6 +2,8 @@ using System;
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
 using Colony.Godot.Scripts.UI.Screens;
+using Colony.Godot.Scripts.UI.Screens.LoadingScreen;
+using Colony.Godot.Scripts.UI.Screens.MapGenerationSetupScreen;
 using Godot;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +17,8 @@ public partial class Application : Node
     private Action Routes => () =>
     {
         _screenNavigator.Register(RouteNames.MainMenu, () => new MainMenuScreen(_screenNavigator));
-        _screenNavigator.Register(RouteNames.Gameplay, () => new GameplayScreen(_screenNavigator));
+        _screenNavigator.Register(RouteNames.MapGenerationSetup, () => new MapGenerationSetupScreen(_screenNavigator));
+        _screenNavigator.Register(RouteNames.Loading, () => new LoadingScreen(_screenNavigator));
     };
 
     public override void _Ready()

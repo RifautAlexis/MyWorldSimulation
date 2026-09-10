@@ -6,12 +6,8 @@ namespace Colony.Godot.Scripts.UI.Screens;
 
 public sealed partial class MainMenuScreen : BaseScreen
 {
-    private readonly IScreenNavigator _navigator;
-
-    public MainMenuScreen(IScreenNavigator navigator)
+    public MainMenuScreen(IScreenNavigator navigator) : base(navigator)
     {
-        Console.WriteLine("Creating MainMenuScreen");
-        _navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
         Build();
     }
 
@@ -44,7 +40,7 @@ public sealed partial class MainMenuScreen : BaseScreen
             CustomMinimumSize = new Vector2(220, 52),
         };
         startButton.SetAnchorsPreset(LayoutPreset.Center);
-        startButton.Pressed += () => _navigator.NavigateTo(RouteNames.Gameplay);
+        startButton.Pressed += () => _navigator.NavigateTo(RouteNames.MapGenerationSetup);
         layout.AddChild(startButton);
 
         var exitButton = new Button
