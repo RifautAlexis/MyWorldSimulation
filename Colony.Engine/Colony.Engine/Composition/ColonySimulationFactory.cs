@@ -21,4 +21,9 @@ public sealed class ColonySimulationFactory
 
         return new ColonySimulation(serviceProvider, engine);
     }
+
+    public Engine CreateNewEngine()
+    {
+        return new Engine();
+    }
 }

@@ -1,6 +1,6 @@
 namespace Colony.Engine.Generation.Models;
 
-public class MapGenerationProgress
+public sealed record MapGenerationProgress(MapGenerationStep Step)
 {
-    
+    public bool IsCompleted => Step == MapGenerationStep.Completed;
 }
