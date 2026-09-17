@@ -6,67 +6,52 @@ using Colony.Engine.Facade.Contracts;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
 using Colony.Godot.Scripts.UI.Controllers;
 using Colony.Godot.Scripts.UI.Renderers;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.models;
 using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.UI;
 using Godot;
 
 namespace Colony.Godot.Scripts.UI.Screens.MapGenerationSetup;
 
-public class MapGenerationSetupForm
-{
-    public MapSize MapSize { get; set; }
-
-    public int Seed { get; set; }
-}
-
 public partial class MapGenerationSetupScreen : BaseScreen
 {
+    // Constants
     private const int DefaultLayerCount = 100;
 
-    private readonly CameraController _cameraController = null!;
-    private readonly MapRenderer _mapRenderer = null!;
-    private readonly IScreenNavigator _navigator = null!;
-
-    private Label _currentStepLabel = null!;
-
-    private MapGenerationSetupForm _form = null!;
-    private Button _generateButton = null!;
-    private CancellationTokenSource? _generationCts;
-
+    // Layers, Roots and Containers
+    private Node3D _mapRoot = null!;
     private CanvasLayer _hudLayer = null!;
-    private Control _hudRoot = null!;
-    private bool _isGenerating;
+    private MapSetupForm _mapSetupForm = null!;
+    private LoadingOverlay _loadingOverlay = null!;
     private CanvasLayer _loadingLayer = null!;
-    private Control _loadingRoot = null!;
     private Node3D _mapContainer = null!;
-    private Button _playButton = null!;
-    private Label _spinnerLabel = null!;
-    private Node3D _worldRoot = null!;
+
+    // Dependencies
+    private readonly IScreenNavigator _navigator = null!;
+    private readonly MapRenderer _mapRenderer = null!;
+    private readonly CameraController _cameraController = null!;
+
+    // State
+    private MapGenerationSetupState _state = null!;
+
+    // Form and Generation
+    private CancellationTokenSource? _generationCts;
 
     public MapGenerationSetupScreen(IScreenNavigator navigator) : base(navigator)
     {
         _navigator = navigator;
 
-        _worldRoot = new Node3D
-        {
-            Name = "WorldRoot",
-        };
-
         var layerRenderer = new LayerRenderer();
         _mapRenderer = new MapRenderer(layerRenderer);
         _cameraController = new CameraController();
+
+        InitializeState();
     }
 
-    public override async void _Ready()
+    public override void _Ready()
     {
-        _form = InitializeForm();
-
-        AddChild(_worldRoot);
-        VisualRoot = _worldRoot;
-
         BuildMap();
-        BuildCamera(_form.MapSize.XAxis, _form.MapSize.YAxis);
         BuildHud();
+        BuildLoadingOverlay();
+
         _ = RegenerateMapAsync();
     }
 
@@ -75,60 +60,40 @@ public partial class MapGenerationSetupScreen : BaseScreen
         _cameraController.Update((float)delta);
     }
 
-    public override void _Input(InputEvent @event)
-    {
-        if (@event is not InputEventKey keyEvent)
-            return;
-
-        if (!keyEvent.Pressed || keyEvent.Echo)
-            return;
-
-        switch (keyEvent.Keycode)
-        {
-            // case Key.Escape:
-            //     if (_pauseMenu.Visible)
-            //     {
-            //         _pauseMenu.Hide();
-            //         TogglePause();
-            //     }
-            //     else
-            //     {
-            //         DisplayPauseMenu();
-            //     }
-            //
-            //     break;
-        }
-    }
-
     public override void _UnhandledInput(InputEvent @event)
     {
         _cameraController.HandleInput(@event);
+    }
 
-        if (@event is not InputEventKey keyEvent) return;
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        if (_mapSetupForm.GetHudRoot() != null) _mapSetupForm.Show();
+    }
 
-        if (!keyEvent.Pressed || keyEvent.Echo)
-            return;
-
-        switch (keyEvent.Keycode)
-        {
-            case Key.A:
-                _cameraController.RotateCounterClockwise();
-                break;
-            case Key.E:
-                _cameraController.RotateClockwise();
-                break;
-        }
+    public override void OnExit()
+    {
+        base.OnExit();
+        if (_mapSetupForm.GetHudRoot() != null) _mapSetupForm.Hide();
     }
 
     private void BuildMap()
     {
+        _mapRoot = new Node3D
+        {
+            Name = "MapRoot",
+        };
+        AddChild(_mapRoot);
+        VisualRoot = _mapRoot;
+
         _mapContainer = new Node3D
         {
             Name = "MapContainer",
         };
-        _worldRoot.AddChild(_mapContainer);
+        _mapRoot.AddChild(_mapContainer);
 
         CreateLight();
+        BuildCamera(_state.Form.MapSize.XAxis, _state.Form.MapSize.YAxis);
     }
 
     private void BuildHud()
@@ -140,33 +105,44 @@ public partial class MapGenerationSetupScreen : BaseScreen
         };
         AddChild(_hudLayer);
 
-        _hudRoot = new Control
+        _mapSetupForm = new MapSetupForm();
+        var hudRoot = _mapSetupForm.BuildMapSetupForm(CreateBindings());
+        _hudLayer.AddChild(hudRoot);
+    }
+
+    private void BuildLoadingOverlay()
+    {
+        _loadingLayer = new CanvasLayer
         {
-            Name = "HudRoot",
+            Name = "LoadingLayer",
+            Layer = 2, // above HUD
         };
-        _hudRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        _hudLayer.AddChild(_hudRoot);
+        AddChild(_loadingLayer);
 
-        var ui = new MapGenerationSetupUI(_hudRoot);
-        ui.Build(CreateBindings());
-        _currentStepLabel = ui.CurrentStepLabel;
-        _generateButton = ui.GenerateButton;
-        _playButton = ui.PlayButton;
-        UpdateGenerateButton();
-
-        BuildLoadingOverlay();
+        _loadingOverlay = new LoadingOverlay();
+        var loadingRoot = _loadingOverlay.BuildLoadingOverlay();
+        _loadingLayer.AddChild(loadingRoot);
     }
 
-    public override void OnEnter()
+    private void InitializeState()
     {
-        base.OnEnter();
-        if (_hudRoot != null) _hudRoot.Visible = true;
+        _state = new MapGenerationSetupState();
+
+        _state.FormChanged += RefreshUiState;
+        _state.IsGeneratingChanged += OnIsGeneratingChanged;
     }
 
-    public override void OnExit()
+    private void RefreshUiState()
     {
-        base.OnExit();
-        if (_hudRoot != null) _hudRoot.Visible = false;
+        _mapSetupForm.SetGenerateButtonEnabled(IsFormValid() && !_state.IsGenerating);
+        _mapSetupForm.SetPlayButtonEnabled(IsFormValid() && !_state.IsGenerating);
+    }
+
+    private void OnIsGeneratingChanged()
+    {
+        RefreshUiState();
+
+        SetLoadingOverlayVisible(_state.IsGenerating);
     }
 
     private void BuildCamera(int xAxisSize, int yAxisSize)
@@ -178,7 +154,7 @@ public partial class MapGenerationSetupScreen : BaseScreen
             Name = "CameraPivot",
         };
 
-        _worldRoot.AddChild(cameraPivot);
+        _mapRoot.AddChild(cameraPivot);
 
         var camera = new Camera3D
         {
@@ -200,22 +176,20 @@ public partial class MapGenerationSetupScreen : BaseScreen
 
         light.RotationDegrees = new Vector3(-45, 45, 0);
 
-        _worldRoot.AddChild(light);
+        _mapRoot.AddChild(light);
     }
 
     private async Task RegenerateMapAsync()
     {
-        if (_isGenerating)
+        if (_state.IsGenerating)
             return;
 
-        _isGenerating = true;
+        _state.SetIsGenerating(true);
         _generationCts?.Cancel();
         _generationCts?.Dispose();
         _generationCts = new CancellationTokenSource();
 
         SetLoadingOverlayVisible(true);
-        _generateButton.Disabled = true;
-        _playButton.Disabled = true;
 
         var progress = new Progress<MapGenerationProgress>(OnMapGenerationProgress);
 
@@ -225,9 +199,9 @@ public partial class MapGenerationSetupScreen : BaseScreen
 
             var mapSettings = new MapGenerationSettings
             {
-                XAxisSize = _form.MapSize.XAxis,
-                YAxisSize = _form.MapSize.YAxis,
-                Seed = _form.Seed,
+                XAxisSize = _state.Form.MapSize.XAxis,
+                YAxisSize = _state.Form.MapSize.YAxis,
+                Seed = _state.Form.Seed,
                 LayerCount = DefaultLayerCount,
             };
             var generatedMap = await engine.GenerateMapAsync(mapSettings, progress, _generationCts.Token);
@@ -241,128 +215,53 @@ public partial class MapGenerationSetupScreen : BaseScreen
 
             var mapPreviewNode = _mapRenderer.Build(generatedMap);
             _mapContainer.AddChild(mapPreviewNode);
-            _currentStepLabel.Text = "Current Step: Completed";
+            _loadingOverlay.UpdateCurrentStepLabel("Completed");
         }
         catch (OperationCanceledException)
         {
-            _currentStepLabel.Text = "Current Step: Canceled";
+            _loadingOverlay.UpdateCurrentStepLabel("Canceled");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            _currentStepLabel.Text = "Current Step: Failed";
+            _loadingOverlay.UpdateCurrentStepLabel("Failed");
         }
         finally
         {
             SetLoadingOverlayVisible(false);
-            _isGenerating = false;
-            UpdateGenerateButton();
+            _state.SetIsGenerating(false);
         }
     }
 
     private void OnMapGenerationProgress(MapGenerationProgress progress)
     {
-        Console.WriteLine($"Map generation progress: {progress.Step}");
-        _currentStepLabel.Text = "Current Step: " + progress.Step;
-    }
-
-    private MapGenerationSetupForm InitializeForm()
-    {
-        return new MapGenerationSetupForm
-        {
-            MapSize = MapSize.Medium,
-            Seed = 12345,
-        };
+        _loadingOverlay.UpdateCurrentStepLabel(progress.Step.ToString());
     }
 
     private bool IsFormValid()
     {
-        return _form.MapSize is { XAxis: > 0, YAxis: > 0 } && _form.Seed != null;
-    }
-
-    private void SelectMapSize(int xAxis, int yAxis)
-    {
-        _form.MapSize = new MapSize
-        {
-            XAxis = xAxis,
-            YAxis = yAxis,
-        };
-
-        UpdateGenerateButton();
+        return _state.Form.MapSize is { XAxis: > 0, YAxis: > 0 } && _state.Form.Seed != null;
     }
 
     private MapGenerationSetupBindings CreateBindings()
     {
         return new MapGenerationSetupBindings
         {
-            InitialMapSize = _form.MapSize,
-            InitialSeed = _form.Seed,
+            InitialMapSize = _state.Form.MapSize,
+            InitialSeed = _state.Form.Seed,
             Generate = OnGeneratePressed,
             Play = OnPlayPressed,
-            SelectMapSize = mapSize => SelectMapSize(mapSize.XAxis, mapSize.YAxis),
-            UpdateSeed = value =>
-            {
-                if (value == null) return;
-                _form.Seed = value;
-            },
+            SelectMapSize = mapSize => _state.SetMapSize(mapSize),
+            UpdateSeed = value => _state.SetSeed(value),
         };
-    }
-
-    private void UpdateGenerateButton()
-    {
-        _generateButton.Disabled = !IsFormValid();
-        _playButton.Disabled = !IsFormValid();
-    }
-
-    private void BuildLoadingOverlay()
-    {
-        _loadingLayer = new CanvasLayer
-        {
-            Name = "LoadingLayer",
-            Layer = 2,
-        };
-        AddChild(_loadingLayer);
-
-        _loadingRoot = new Control
-        {
-            Name = "LoadingRoot",
-            Visible = false,
-            MouseFilter = Control.MouseFilterEnum.Stop,
-        };
-        _loadingRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        _loadingLayer.AddChild(_loadingRoot);
-
-        var blurOverlay = new ColorRect
-        {
-            Name = "BlurOverlay",
-            Color = new Color(0f, 0f, 0f, 0.35f),
-            MouseFilter = Control.MouseFilterEnum.Stop,
-        };
-        blurOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        _loadingRoot.AddChild(blurOverlay);
-
-        var spinnerContainer = new CenterContainer
-        {
-            Name = "SpinnerContainer",
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-        };
-        spinnerContainer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        _loadingRoot.AddChild(spinnerContainer);
-
-        _spinnerLabel = new Label
-        {
-            Name = "SpinnerLabel",
-            Text = "Loading...",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        _spinnerLabel.AddThemeFontSizeOverride("font_size", 28);
-        spinnerContainer.AddChild(_spinnerLabel);
     }
 
     private void SetLoadingOverlayVisible(bool visible)
     {
-        _loadingRoot.Visible = visible;
+        if (visible)
+            _loadingOverlay.Show();
+        else
+            _loadingOverlay.Hide();
     }
 
     private void OnGeneratePressed()

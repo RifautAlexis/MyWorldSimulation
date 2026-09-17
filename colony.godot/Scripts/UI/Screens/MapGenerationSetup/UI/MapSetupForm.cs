@@ -5,14 +5,48 @@ using Godot;
 
 namespace Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.UI;
 
-public class MapGenerationSetupUI(Node screen)
+public class MapSetupForm
 {
-    public Label CurrentStepLabel { get; private set; } = null!;
+    // Root Control
+    private Control HudRoot { get; set; }
+
+    // UI Elements
     public Button GenerateButton { get; private set; } = null!;
     public Button PlayButton { get; private set; } = null!;
 
-    public void Build(MapGenerationSetupBindings bindings)
+    public Control GetHudRoot()
     {
+        return HudRoot;
+    }
+
+    public void Show()
+    {
+        HudRoot.Visible = true;
+    }
+
+    public void Hide()
+    {
+        HudRoot.Visible = false;
+    }
+
+    public void SetGenerateButtonEnabled(bool enabled)
+    {
+        GenerateButton.Disabled = !enabled;
+    }
+
+    public void SetPlayButtonEnabled(bool enabled)
+    {
+        PlayButton.Disabled = !enabled;
+    }
+
+    public Control BuildMapSetupForm(MapGenerationSetupBindings bindings)
+    {
+        HudRoot = new Control
+        {
+            Name = "HudRoot",
+        };
+        HudRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+
         // Content wrapper
         var panelContainer = new PanelContainer();
         var marginContainer = new MarginContainer();
@@ -27,7 +61,7 @@ public class MapGenerationSetupUI(Node screen)
         var vBoxContainer = new VBoxContainer();
         marginContainer.AddChild(vBoxContainer);
 
-        screen.AddChild(panelContainer);
+        HudRoot.AddChild(panelContainer);
 
         // Map Size Section
         vBoxContainer.AddChild(MapSizeSection(bindings));
@@ -37,6 +71,8 @@ public class MapGenerationSetupUI(Node screen)
 
         // Actions Section
         vBoxContainer.AddChild(ActionsSection(bindings));
+
+        return HudRoot;
     }
 
     private VBoxContainer MapSizeSection(MapGenerationSetupBindings bindings)
@@ -101,12 +137,6 @@ public class MapGenerationSetupUI(Node screen)
 
         PlayButton = CreateButton("Play", bindings.Play);
         vBoxContainer.AddChild(PlayButton);
-
-        CurrentStepLabel = new Label
-        {
-            Text = "Current Step: None",
-        };
-        vBoxContainer.AddChild(CurrentStepLabel);
 
         return vBoxContainer;
     }
