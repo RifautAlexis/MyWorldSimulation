@@ -39,7 +39,23 @@ public class CameraController
 
     public void HandleInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton emb)
+        if (@event is InputEventKey keyEvent)
+        {
+            if (!keyEvent.Pressed || keyEvent.Echo)
+                return;
+
+            switch (keyEvent.Keycode)
+            {
+                case Key.A:
+                    RotateCounterClockwise();
+                    break;
+                case Key.E:
+                    RotateClockwise();
+                    break;
+            }
+        }
+        else if (@event is InputEventMouseButton emb)
+        {
             switch (emb.ButtonIndex)
             {
                 case MouseButton.Right:
@@ -48,7 +64,6 @@ public class CameraController
                     Input.MouseMode = _isOrbitingWithMouse
                         ? Input.MouseModeEnum.Captured
                         : Input.MouseModeEnum.Visible;
-
                     break;
 
                 case MouseButton.Left:
@@ -58,17 +73,15 @@ public class CameraController
                 case MouseButton.WheelUp when emb.Pressed:
                     if (AdjustZoom(-MouseWheelZoomStep))
                         ApplyCameraTransform();
-
                     break;
 
                 case MouseButton.WheelDown when emb.Pressed:
                     if (AdjustZoom(MouseWheelZoomStep))
                         ApplyCameraTransform();
-
                     break;
             }
-
-        if (@event is InputEventMouseMotion emm)
+        }
+        else if (@event is InputEventMouseMotion emm)
         {
             if (_isOrbitingWithMouse)
             {
@@ -80,9 +93,8 @@ public class CameraController
                 );
             }
 
-            if (_isMovingWithMouse)
-                if (MoveFocus(emm.Relative))
-                    ApplyCameraTransform();
+            if (_isMovingWithMouse && MoveFocus(emm.Relative))
+                ApplyCameraTransform();
         }
     }
 
