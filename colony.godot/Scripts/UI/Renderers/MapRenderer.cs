@@ -49,7 +49,6 @@ public class MapRenderer
                             .Where(x => x.Key == layer)
                             .GroupBy(x => x.Key)
                             .Select(g => g.Count());
-            Console.WriteLine($"Layer {layer}: {string.Join(", ", layerItems)}");
         }
 
         ApplyVisibility();

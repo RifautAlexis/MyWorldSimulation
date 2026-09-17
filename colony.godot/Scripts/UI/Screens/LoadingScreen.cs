@@ -18,7 +18,7 @@ public partial class LoadingScreen(IScreenNavigator navigator) : BaseScreen(navi
 
         var timer = GetTree().CreateTimer(5.0);
         await ToSignal(timer, SceneTreeTimer.SignalName.Timeout);
-        _navigator.NavigateTo(RouteNames.MainMenu);
+        Navigator.NavigateTo(RouteNames.MainMenu);
     }
 
     private void BuildUi()

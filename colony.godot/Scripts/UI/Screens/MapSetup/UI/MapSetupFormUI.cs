@@ -1,32 +1,26 @@
 using System;
 using Colony.Godot.Scripts.UI.Components;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.models;
+using Colony.Godot.Scripts.UI.Screens.MapSetup.models;
 using Godot;
 
-namespace Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.UI;
+namespace Colony.Godot.Scripts.UI.Screens.MapSetup.UI;
 
-public class MapSetupForm
+public class MapSetupFormUI
 {
     // Root Control
-    private Control HudRoot { get; set; }
+    private Control HudRoot { get; }
 
     // UI Elements
-    public Button GenerateButton { get; private set; } = null!;
-    public Button PlayButton { get; private set; } = null!;
+    private CustomButton GenerateButton { get; set; } = null!;
+    private CustomButton PlayButton { get; set; } = null!;
 
-    public Control GetHudRoot()
+    public MapSetupFormUI()
     {
-        return HudRoot;
-    }
-
-    public void Show()
-    {
-        HudRoot.Visible = true;
-    }
-
-    public void Hide()
-    {
-        HudRoot.Visible = false;
+        HudRoot = new Control
+        {
+            Name = "HudRoot",
+        };
+        HudRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
     }
 
     public void SetGenerateButtonEnabled(bool enabled)
@@ -39,14 +33,8 @@ public class MapSetupForm
         PlayButton.Disabled = !enabled;
     }
 
-    public Control BuildMapSetupForm(MapGenerationSetupBindings bindings)
+    public Control BuildMapSetupForm(MapSetupBindings bindings)
     {
-        HudRoot = new Control
-        {
-            Name = "HudRoot",
-        };
-        HudRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-
         // Content wrapper
         var panelContainer = new PanelContainer();
         var marginContainer = new MarginContainer();
@@ -75,7 +63,7 @@ public class MapSetupForm
         return HudRoot;
     }
 
-    private VBoxContainer MapSizeSection(MapGenerationSetupBindings bindings)
+    private static VBoxContainer MapSizeSection(MapSetupBindings bindings)
     {
         var vBoxContainer = new VBoxContainer();
 
@@ -105,7 +93,7 @@ public class MapSetupForm
         return vBoxContainer;
     }
 
-    private VBoxContainer SeedSection(MapGenerationSetupBindings bindings)
+    private static VBoxContainer SeedSection(MapSetupBindings bindings)
     {
         var vBoxContainer = new VBoxContainer();
 
@@ -120,15 +108,20 @@ public class MapSetupForm
             MinValue = int.MinValue,
             MaxValue = int.MaxValue,
             AllowNegative = true,
-            Value = bindings.InitialSeed,
+            // Value = bindings.InitialSeed, // TODO: Give a default value to the seed input, maybe a random value or a fixed one, and update the bindings accordingly
         };
-        seedInput.ValueChanged += value => bindings.UpdateSeed((int)value);
+        seedInput.ValueChanged += value =>
+        {
+            // TODO: value may be null when no value is entered, handle this case appropriately !!!
+            Console.WriteLine($"Seed changed to: {value}");
+            bindings.UpdateSeed((int)value);
+        };
         vBoxContainer.AddChild(seedInput);
 
         return vBoxContainer;
     }
 
-    private VBoxContainer ActionsSection(MapGenerationSetupBindings bindings)
+    private VBoxContainer ActionsSection(MapSetupBindings bindings)
     {
         var vBoxContainer = new VBoxContainer();
 
@@ -141,7 +134,7 @@ public class MapSetupForm
         return vBoxContainer;
     }
 
-    private static Button CreateButton(string text, Action callback)
+    private static CustomButton CreateButton(string text, Action callback)
     {
         var button = new CustomButton
         {

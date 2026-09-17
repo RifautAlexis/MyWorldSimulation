@@ -6,12 +6,12 @@ namespace Colony.Godot.Scripts.UI.Screens;
 
 public abstract partial class BaseScreen : Node
 {
-    protected readonly IScreenNavigator _navigator;
+    protected readonly IScreenNavigator Navigator;
     protected Node? VisualRoot { get; set; }
 
     protected BaseScreen(IScreenNavigator navigator)
     {
-        _navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
+        Navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
     }
 
     public virtual void OnEnter()
@@ -24,7 +24,7 @@ public abstract partial class BaseScreen : Node
         SetVisualActive(false);
     }
 
-    protected void SetVisualActive(bool active)
+    private void SetVisualActive(bool active)
     {
         if (VisualRoot is CanvasItem canvasItem)
             canvasItem.Visible = active;

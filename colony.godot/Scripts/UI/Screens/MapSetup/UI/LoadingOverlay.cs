@@ -1,16 +1,16 @@
 using Godot;
 
-namespace Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.UI;
+namespace Colony.Godot.Scripts.UI.Screens.MapSetup.UI;
 
 public class LoadingOverlay
 {
     // Root Control
-    private Control LoadingRoot { get; set; }
+    private Control LoadingRoot { get; }
 
     // UI Elements
-    public Label CurrentStepLabel { get; private set; } = null!;
+    private Label CurrentStepLabel { get; set; } = null!;
 
-    public Control BuildLoadingOverlay()
+    public LoadingOverlay()
     {
         LoadingRoot = new Control
         {
@@ -19,7 +19,10 @@ public class LoadingOverlay
             MouseFilter = Control.MouseFilterEnum.Stop,
         };
         LoadingRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+    }
 
+    public Control BuildLoadingOverlay()
+    {
         var blurOverlay = new ColorRect
         {
             Name = "BlurOverlay",

@@ -1,5 +1,5 @@
 using System;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.models;
+using Colony.Godot.Scripts.UI.Screens.MapSetup.models;
 
 namespace Colony.Godot.Scripts.UI.Screens;
 
@@ -7,7 +7,7 @@ public class MapGenerationSetupState
 {
     // Constants
     public static readonly MapGenerationSetupState DefaultState = new(
-        new MapGenerationSetupForm
+        new MapSetupForm
         {
             MapSize = MapSize.Medium,
             Seed = 12345,
@@ -16,17 +16,17 @@ public class MapGenerationSetupState
     );
 
     // State properties
-    public MapGenerationSetupForm Form { get; private set; }
+    public MapSetupForm Form { get; private set; }
     public bool IsGenerating { get; private set; }
 
-    private MapGenerationSetupState(MapGenerationSetupForm form, bool isGenerating)
+    private MapGenerationSetupState(MapSetupForm form, bool isGenerating)
     {
         Form = form;
         IsGenerating = isGenerating;
     }
 
     public MapGenerationSetupState() : this(
-        new MapGenerationSetupForm
+        new MapSetupForm
         {
             MapSize = DefaultState.Form.MapSize,
             Seed = DefaultState.Form.Seed,
@@ -48,7 +48,7 @@ public class MapGenerationSetupState
         FormChanged?.Invoke();
     }
 
-    public void SetForm(MapGenerationSetupForm form)
+    public void SetForm(MapSetupForm form)
     {
         Form = form;
         FormChanged?.Invoke();

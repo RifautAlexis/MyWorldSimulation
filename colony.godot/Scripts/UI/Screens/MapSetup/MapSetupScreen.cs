@@ -6,12 +6,12 @@ using Colony.Engine.Facade.Contracts;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
 using Colony.Godot.Scripts.UI.Controllers;
 using Colony.Godot.Scripts.UI.Renderers;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup.UI;
+using Colony.Godot.Scripts.UI.Screens.MapSetup.UI;
 using Godot;
 
-namespace Colony.Godot.Scripts.UI.Screens.MapGenerationSetup;
+namespace Colony.Godot.Scripts.UI.Screens.MapSetup;
 
-public partial class MapGenerationSetupScreen : BaseScreen
+public partial class MapSetupScreen : BaseScreen
 {
     // Constants
     private const int DefaultLayerCount = 100;
@@ -19,26 +19,23 @@ public partial class MapGenerationSetupScreen : BaseScreen
     // Layers, Roots and Containers
     private Node3D _mapRoot = null!;
     private CanvasLayer _hudLayer = null!;
-    private MapSetupForm _mapSetupForm = null!;
+    private MapSetupFormUI _mapSetupForm = null!;
     private LoadingOverlay _loadingOverlay = null!;
     private CanvasLayer _loadingLayer = null!;
     private Node3D _mapContainer = null!;
 
     // Dependencies
-    private readonly IScreenNavigator _navigator = null!;
-    private readonly MapRenderer _mapRenderer = null!;
-    private readonly CameraController _cameraController = null!;
+    private readonly MapRenderer _mapRenderer;
+    private readonly CameraController _cameraController;
 
     // State
     private MapGenerationSetupState _state = null!;
 
-    // Form and Generation
+    // Cancellation Tokens
     private CancellationTokenSource? _generationCts;
 
-    public MapGenerationSetupScreen(IScreenNavigator navigator) : base(navigator)
+    public MapSetupScreen(IScreenNavigator navigator) : base(navigator)
     {
-        _navigator = navigator;
-
         var layerRenderer = new LayerRenderer();
         _mapRenderer = new MapRenderer(layerRenderer);
         _cameraController = new CameraController();
@@ -63,18 +60,6 @@ public partial class MapGenerationSetupScreen : BaseScreen
     public override void _UnhandledInput(InputEvent @event)
     {
         _cameraController.HandleInput(@event);
-    }
-
-    public override void OnEnter()
-    {
-        base.OnEnter();
-        if (_mapSetupForm.GetHudRoot() != null) _mapSetupForm.Show();
-    }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-        if (_mapSetupForm.GetHudRoot() != null) _mapSetupForm.Hide();
     }
 
     private void BuildMap()
@@ -105,7 +90,7 @@ public partial class MapGenerationSetupScreen : BaseScreen
         };
         AddChild(_hudLayer);
 
-        _mapSetupForm = new MapSetupForm();
+        _mapSetupForm = new MapSetupFormUI();
         var hudRoot = _mapSetupForm.BuildMapSetupForm(CreateBindings());
         _hudLayer.AddChild(hudRoot);
     }
@@ -185,7 +170,7 @@ public partial class MapGenerationSetupScreen : BaseScreen
             return;
 
         _state.SetIsGenerating(true);
-        _generationCts?.Cancel();
+        _generationCts?.CancelAsync();
         _generationCts?.Dispose();
         _generationCts = new CancellationTokenSource();
 
@@ -195,7 +180,7 @@ public partial class MapGenerationSetupScreen : BaseScreen
 
         try
         {
-            IColonyEngine engine = new ColonyEngineFacade();
+            var engine = new ColonyEngineFacade();
 
             var mapSettings = new MapGenerationSettings
             {
@@ -207,10 +192,10 @@ public partial class MapGenerationSetupScreen : BaseScreen
             var generatedMap = await engine.GenerateMapAsync(mapSettings, progress, _generationCts.Token);
 
             foreach (var child in _mapContainer.GetChildren())
-                if (child is Node node)
+                if (child != null)
                 {
-                    _mapContainer.RemoveChild(node);
-                    node.QueueFree();
+                    _mapContainer.RemoveChild(child);
+                    child.QueueFree();
                 }
 
             var mapPreviewNode = _mapRenderer.Build(generatedMap);
@@ -243,12 +228,10 @@ public partial class MapGenerationSetupScreen : BaseScreen
         return _state.Form.MapSize is { XAxis: > 0, YAxis: > 0 } && _state.Form.Seed != null;
     }
 
-    private MapGenerationSetupBindings CreateBindings()
+    private MapSetupBindings CreateBindings()
     {
-        return new MapGenerationSetupBindings
+        return new MapSetupBindings
         {
-            InitialMapSize = _state.Form.MapSize,
-            InitialSeed = _state.Form.Seed,
             Generate = OnGeneratePressed,
             Play = OnPlayPressed,
             SelectMapSize = mapSize => _state.SetMapSize(mapSize),
@@ -273,6 +256,6 @@ public partial class MapGenerationSetupScreen : BaseScreen
     private void OnPlayPressed()
     {
         if (!IsFormValid()) return;
-        _navigator.NavigateTo(RouteNames.MainMenu);
+        Navigator.NavigateTo(RouteNames.MainMenu);
     }
 }

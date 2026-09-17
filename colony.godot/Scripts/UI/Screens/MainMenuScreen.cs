@@ -41,7 +41,7 @@ public sealed partial class MainMenuScreen(IScreenNavigator navigator) : BaseScr
             Text = "Start game",
             CustomMinimumSize = new Vector2(220, 52),
         };
-        startButton.Pressed += () => _navigator.NavigateTo(RouteNames.MapGenerationSetup);
+        startButton.Pressed += () => Navigator.NavigateTo(RouteNames.MapGenerationSetup);
         layout.AddChild(startButton);
 
         var exitButton = new Button
