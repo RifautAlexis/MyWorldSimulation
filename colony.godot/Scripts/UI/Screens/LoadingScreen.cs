@@ -1,22 +1,19 @@
-using System;
-using System.Threading.Tasks;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetupScreen;
 using Godot;
 
-namespace Colony.Godot.Scripts.UI.Screens.LoadingScreen;
+namespace Colony.Godot.Scripts.UI.Screens;
 
-public partial class LoadingScreen : BaseScreen
+public partial class LoadingScreen(IScreenNavigator navigator) : BaseScreen(navigator)
 {
-    public LoadingScreen(IScreenNavigator navigator) : base(navigator)
-    {
-    }
+    private Control _uiRoot = null!;
 
     public override async void _Ready()
     {
-        var payload = _navigator.GetPayload<MapGenerationSettings>();
-        Console.WriteLine(
-            $"LoadingScreen received payload: XAxis={payload?.XAxis}, YAxis={payload?.YAxis}, Seed={payload?.Seed}");
+        _uiRoot = new Control();
+        _uiRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        AddChild(_uiRoot);
+        VisualRoot = _uiRoot;
+
         BuildUi();
 
         var timer = GetTree().CreateTimer(5.0);
@@ -28,12 +25,12 @@ public partial class LoadingScreen : BaseScreen
     {
         var centerContainer = new CenterContainer
         {
-            MouseFilter = MouseFilterEnum.Ignore,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
 
-        centerContainer.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        centerContainer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
-        AddChild(centerContainer);
+        _uiRoot.AddChild(centerContainer);
 
         var titleLabel = BuildTitle("Loading...");
         centerContainer.AddChild(titleLabel);

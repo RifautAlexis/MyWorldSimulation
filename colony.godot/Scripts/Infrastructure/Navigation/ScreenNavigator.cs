@@ -44,11 +44,8 @@ public sealed class ScreenNavigator : IScreenNavigator
         current.OnExit();
         _root.RemoveChild(current);
         current.QueueFree();
-
-        Console.WriteLine(
-            $"Navigated back from {current.Name} to {_history.Peek().Name}. History count : {_history.Count}");
+        
         var previous = _history.Peek();
-        previous.Show();
         _root.AddChild(previous);
         previous.OnEnter();
     }
@@ -65,18 +62,17 @@ public sealed class ScreenNavigator : IScreenNavigator
 
         _currentPayload = payload;
         var screen = factory();
+
         if (screen is null) throw new InvalidOperationException($"Factory for route '{route}' returned a null screen.");
 
         if (_history.Count > 0)
         {
             var current = _history.Peek();
             current.OnExit();
-            current.Hide();
             _root.RemoveChild(current);
         }
 
         _root.AddChild(screen);
-        screen.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _history.Push(screen);
         screen.OnEnter();
     }

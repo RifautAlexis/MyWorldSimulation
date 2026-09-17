@@ -1,22 +1,24 @@
-using System;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
 using Godot;
 
 namespace Colony.Godot.Scripts.UI.Screens;
 
-public sealed partial class MainMenuScreen : BaseScreen
+public sealed partial class MainMenuScreen(IScreenNavigator navigator) : BaseScreen(navigator)
 {
-    public MainMenuScreen(IScreenNavigator navigator) : base(navigator)
+    private Control _uiRoot = null!;
+
+    public override void _Ready()
     {
-        Build();
+        _uiRoot = new Control();
+        _uiRoot.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        AddChild(_uiRoot);
+        VisualRoot = _uiRoot;
+
+        BuildUi();
     }
 
-    private void Build()
+    private void BuildUi()
     {
-        Console.WriteLine("Building MainMenuScreen");
-        Name = RouteNames.MainMenu;
-        SetAnchorsPreset(LayoutPreset.FullRect);
-
         var title = new Label
         {
             Text = "Colony",
@@ -24,22 +26,21 @@ public sealed partial class MainMenuScreen : BaseScreen
             VerticalAlignment = VerticalAlignment.Center,
             Position = new Vector2(0, 120),
         };
-        title.SetAnchorsPreset(LayoutPreset.TopWide);
-        AddChild(title);
+        title.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+        _uiRoot.AddChild(title);
 
         var layout = new VBoxContainer
         {
             CustomMinimumSize = new Vector2(220, 52),
         };
-        layout.SetAnchorsPreset(LayoutPreset.Center);
-        AddChild(layout);
+        layout.SetAnchorsPreset(Control.LayoutPreset.Center);
+        _uiRoot.AddChild(layout);
 
         var startButton = new Button
         {
             Text = "Start game",
             CustomMinimumSize = new Vector2(220, 52),
         };
-        startButton.SetAnchorsPreset(LayoutPreset.Center);
         startButton.Pressed += () => _navigator.NavigateTo(RouteNames.MapGenerationSetup);
         layout.AddChild(startButton);
 
@@ -48,7 +49,6 @@ public sealed partial class MainMenuScreen : BaseScreen
             Text = "Exit",
             CustomMinimumSize = new Vector2(220, 52),
         };
-        exitButton.SetAnchorsPreset(LayoutPreset.Center);
         exitButton.Pressed += () => GetTree().Quit();
         layout.AddChild(exitButton);
     }

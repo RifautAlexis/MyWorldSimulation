@@ -2,8 +2,7 @@ using System;
 using Colony.Godot.Scripts.Infrastructure.DependencyInjection;
 using Colony.Godot.Scripts.Infrastructure.Navigation;
 using Colony.Godot.Scripts.UI.Screens;
-using Colony.Godot.Scripts.UI.Screens.LoadingScreen;
-using Colony.Godot.Scripts.UI.Screens.MapGenerationSetupScreen;
+using Colony.Godot.Scripts.UI.Screens.MapGenerationSetup;
 using Godot;
 using Microsoft.Extensions.DependencyInjection;
 
