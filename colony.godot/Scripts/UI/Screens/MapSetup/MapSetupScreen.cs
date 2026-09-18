@@ -29,7 +29,7 @@ public partial class MapSetupScreen : BaseScreen
     private readonly CameraController _cameraController;
 
     // State
-    private MapGenerationSetupState _state = null!;
+    private MapSetupState _state = null!;
 
     // Cancellation Tokens
     private CancellationTokenSource? _generationCts;
@@ -111,7 +111,7 @@ public partial class MapSetupScreen : BaseScreen
 
     private void InitializeState()
     {
-        _state = new MapGenerationSetupState();
+        _state = new MapSetupState();
 
         _state.FormChanged += RefreshUiState;
         _state.IsGeneratingChanged += OnIsGeneratingChanged;

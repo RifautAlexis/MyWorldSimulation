@@ -3,10 +3,10 @@ using Colony.Godot.Scripts.UI.Screens.MapSetup.models;
 
 namespace Colony.Godot.Scripts.UI.Screens;
 
-public class MapGenerationSetupState
+public class MapSetupState
 {
     // Constants
-    public static readonly MapGenerationSetupState DefaultState = new(
+    private static readonly MapSetupState DefaultState = new(
         new MapSetupForm
         {
             MapSize = MapSize.Medium,
@@ -19,13 +19,13 @@ public class MapGenerationSetupState
     public MapSetupForm Form { get; private set; }
     public bool IsGenerating { get; private set; }
 
-    private MapGenerationSetupState(MapSetupForm form, bool isGenerating)
+    private MapSetupState(MapSetupForm form, bool isGenerating)
     {
         Form = form;
         IsGenerating = isGenerating;
     }
 
-    public MapGenerationSetupState() : this(
+    public MapSetupState() : this(
         new MapSetupForm
         {
             MapSize = DefaultState.Form.MapSize,
